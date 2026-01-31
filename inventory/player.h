@@ -7,14 +7,15 @@ class Player
 {
 private:
     std::string name;
-    Inventory* inventory;
+    Inventory* inv;
 public:
     Player();
+    Player(std::string name);
     ~Player();
-    std::string getName() const;
     void setName(const std::string &newName);
-    Inventory *getInventory() const;
-    void setInventory(Inventory *newInventory);
+    void setInv(Inventory *newInv);
+    Inventory *getInv() const;
+    std::string getName() const;
 };
 
 #endif // PLAYER_H

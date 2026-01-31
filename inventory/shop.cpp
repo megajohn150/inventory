@@ -1,46 +1,46 @@
-#include "inventory.h"
+#include "shop.h"
 
-int Inventory::getRows() const
+int Shop::getRows() const
 {
     return rows;
 }
 
-void Inventory::setRows(int newRows)
+void Shop::setRows(int newRows)
 {
     rows = newRows;
 }
 
-int Inventory::getCols() const
+int Shop::getCols() const
 {
     return cols;
 }
 
-void Inventory::setCols(int newCols)
+void Shop::setCols(int newCols)
 {
     cols = newCols;
 }
 
-Item ***Inventory::getItems() const
+Item ***Shop::getItems() const
 {
     return items;
 }
 
-Item *Inventory::getItemOnSelectedRC(int row, int col)
+Item *Shop::getItemOnSelectedRC(int row, int col)
 {
     return items[row][col];
 }
 
-void Inventory::setItems(Item ***newItems)
+void Shop::setItems(Item ***newItems)
 {
     items = newItems;
 }
 
-int Inventory::getCurrentRow() const
+int Shop::getCurrentRow() const
 {
     return currentRow;
 }
 
-void Inventory::setCurrentRow(int newCurrentRow)
+void Shop::setCurrentRow(int newCurrentRow)
 {
     if (newCurrentRow >= 0 && newCurrentRow < rows){
         currentRow = newCurrentRow;
@@ -51,12 +51,12 @@ void Inventory::setCurrentRow(int newCurrentRow)
     }
 }
 
-int Inventory::getCurrentCol() const
+int Shop::getCurrentCol() const
 {
     return currentCol;
 }
 
-void Inventory::setCurrentCol(int newCurrentCol)
+void Shop::setCurrentCol(int newCurrentCol)
 {
     if (newCurrentCol >= 0 && newCurrentCol < cols){
         currentCol = newCurrentCol;
@@ -67,10 +67,10 @@ void Inventory::setCurrentCol(int newCurrentCol)
     }
 }
 
-Inventory::Inventory()
+Shop::Shop()
 {
-    rows = 4;
-    cols = 4;
+    rows = 10;
+    cols = 1;
     currentRow = 0;
     currentCol = 0;
 
@@ -80,7 +80,7 @@ Inventory::Inventory()
     }
 }
 
-Inventory::~Inventory()
+Shop::~Shop()
 {
     this->clear();
     for(int i = 0; i < rows; i++) {
@@ -89,7 +89,7 @@ Inventory::~Inventory()
     delete[] items;
 }
 
-void Inventory::clear()
+void Shop::clear()
 {
     for (int i = 0; i < rows; i++){
         for (int j = 0; j < cols; j++){
@@ -102,38 +102,61 @@ void Inventory::clear()
 }
 
 
-void Inventory::display()
+void Shop::display()
 {
+    // close range weapons
+    // long range weapons
+    // defensive equipment
+    std::cout << "~~~~~~~~~~~~~\nClose range weapons: \n";
     for (int i = 0; i < rows; i++){
         for (int j = 0; j < cols; j++){
-
-            // if (items[rows][cols]->getDurability() >= 0){
-            //     delete items[rows][cols];
-            //     items[rows][cols] = nullptr;
-            // }
-
-            if (i == currentRow && j == currentCol){
-                std::cout << ">[";
-            } else{
-                std::cout << " [";
-            }
-            if (items[i][j] == nullptr){
-                std::cout << " ";
-            } else {
-                std::cout << char(toupper(items[i][j]->getName()[0]));
-            }
-
-            if (i == currentRow && j == currentCol){
-                std::cout << "]<";
-            } else{
-                std::cout << "] ";
+            if(items[i][j]->getCategory() == "close range weapons"){
+                if (i == currentRow && j == currentCol){
+                    std::cout << " >  ";
+                }
+                else{
+                    std::cout << " ";
+                }
+                std::cout << items[i][j]->getName();
+                std::cout << "\n";
             }
         }
-        std::cout << "\n";
+
+    }
+    std::cout << "~~~~~~~~~~~~~\nLong range weapons: \n";
+    for (int i = 0; i < rows; i++){
+        for (int j = 0; j < cols; j++){
+            if(items[i][j]->getCategory() == "long range weapons"){
+                if (i == currentRow && j == currentCol){
+                    std::cout << " >  ";
+                }
+                else{
+                    std::cout << " ";
+                }
+                std::cout << items[i][j]->getName();
+                std::cout << "\n";
+            }
+        }
+    }
+    std::cout << "~~~~~~~~~~~~~\nDefensive equipment: \n";
+    for (int i = 0; i < rows; i++){
+        for (int j = 0; j < cols; j++){
+            if(items[i][j]->getCategory() == "defensive equipment"){
+                if (i == currentRow && j == currentCol){
+                    std::cout << " >  ";
+                }
+                else{
+                    std::cout << " ";
+                }
+                std::cout << items[i][j]->getName();
+                std::cout << "\n";
+            }
+
+        }
     }
 }
 
-bool Inventory::addItem(Item *item)
+bool Shop::addItem(Item *item)
 {
     for (int i = 0; i < rows; i++){
         for (int j = 0; j < cols; j++){
@@ -146,7 +169,7 @@ bool Inventory::addItem(Item *item)
     return false;
 }
 
-bool Inventory::removeItem(int row, int col)
+bool Shop::removeItem(int row, int col)
 {
     if (items[row][col] != nullptr){
         delete items[row][col];
@@ -156,7 +179,7 @@ bool Inventory::removeItem(int row, int col)
     return false;
 }
 
-bool Inventory::moveTo(int oldRow, int oldCol, int newRow, int newCol)
+bool Shop::moveTo(int oldRow, int oldCol, int newRow, int newCol)
 {
     if (oldRow < 0 || oldRow >= rows || oldCol < 0 || oldCol >= cols ||
         newRow < 0 || newRow >= rows || newCol < 0 || newCol >= cols) {
@@ -178,7 +201,7 @@ bool Inventory::moveTo(int oldRow, int oldCol, int newRow, int newCol)
     return true;
 }
 
-void Inventory::sort()
+void Shop::sort()
 {
     std::vector<Item*> allItems;
 
@@ -195,4 +218,3 @@ void Inventory::sort()
         addItem(item);
     }
 }
-

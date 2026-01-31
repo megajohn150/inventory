@@ -1,46 +1,46 @@
-#include "inventory.h"
+#include "store.h"
 
-int Inventory::getRows() const
+int Store::getRows() const
 {
     return rows;
 }
 
-void Inventory::setRows(int newRows)
+void Store::setRows(int newRows)
 {
     rows = newRows;
 }
 
-int Inventory::getCols() const
+int Store::getCols() const
 {
     return cols;
 }
 
-void Inventory::setCols(int newCols)
+void Store::setCols(int newCols)
 {
     cols = newCols;
 }
 
-Item ***Inventory::getItems() const
+Item ***Store::getItems() const
 {
     return items;
 }
 
-Item *Inventory::getItemOnSelectedRC(int row, int col)
+Item *Store::getItemOnSelectedRC(int row, int col)
 {
     return items[row][col];
 }
 
-void Inventory::setItems(Item ***newItems)
+void Store::setItems(Item ***newItems)
 {
     items = newItems;
 }
 
-int Inventory::getCurrentRow() const
+int Store::getCurrentRow() const
 {
     return currentRow;
 }
 
-void Inventory::setCurrentRow(int newCurrentRow)
+void Store::setCurrentRow(int newCurrentRow)
 {
     if (newCurrentRow >= 0 && newCurrentRow < rows){
         currentRow = newCurrentRow;
@@ -51,12 +51,12 @@ void Inventory::setCurrentRow(int newCurrentRow)
     }
 }
 
-int Inventory::getCurrentCol() const
+int Store::getCurrentCol() const
 {
     return currentCol;
 }
 
-void Inventory::setCurrentCol(int newCurrentCol)
+void Store::setCurrentCol(int newCurrentCol)
 {
     if (newCurrentCol >= 0 && newCurrentCol < cols){
         currentCol = newCurrentCol;
@@ -67,10 +67,10 @@ void Inventory::setCurrentCol(int newCurrentCol)
     }
 }
 
-Inventory::Inventory()
+Store::Store()
 {
-    rows = 4;
-    cols = 4;
+    rows = 2;
+    cols = 1;
     currentRow = 0;
     currentCol = 0;
 
@@ -80,7 +80,7 @@ Inventory::Inventory()
     }
 }
 
-Inventory::~Inventory()
+Store::~Store()
 {
     this->clear();
     for(int i = 0; i < rows; i++) {
@@ -89,7 +89,7 @@ Inventory::~Inventory()
     delete[] items;
 }
 
-void Inventory::clear()
+void Store::clear()
 {
     for (int i = 0; i < rows; i++){
         for (int j = 0; j < cols; j++){
@@ -101,39 +101,23 @@ void Inventory::clear()
     }
 }
 
-
-void Inventory::display()
+void Store::display()
 {
     for (int i = 0; i < rows; i++){
         for (int j = 0; j < cols; j++){
-
-            // if (items[rows][cols]->getDurability() >= 0){
-            //     delete items[rows][cols];
-            //     items[rows][cols] = nullptr;
-            // }
-
             if (i == currentRow && j == currentCol){
-                std::cout << ">[";
-            } else{
-                std::cout << " [";
+                std::cout << ">  ";
             }
-            if (items[i][j] == nullptr){
-                std::cout << " ";
-            } else {
-                std::cout << char(toupper(items[i][j]->getName()[0]));
+            else{
+                std::cout << "";
             }
-
-            if (i == currentRow && j == currentCol){
-                std::cout << "]<";
-            } else{
-                std::cout << "] ";
-            }
+            std::cout << items[i][j]->getName();
         }
         std::cout << "\n";
     }
 }
 
-bool Inventory::addItem(Item *item)
+bool Store::addItem(Item *item)
 {
     for (int i = 0; i < rows; i++){
         for (int j = 0; j < cols; j++){
@@ -146,7 +130,7 @@ bool Inventory::addItem(Item *item)
     return false;
 }
 
-bool Inventory::removeItem(int row, int col)
+bool Store::removeItem(int row, int col)
 {
     if (items[row][col] != nullptr){
         delete items[row][col];
@@ -156,7 +140,7 @@ bool Inventory::removeItem(int row, int col)
     return false;
 }
 
-bool Inventory::moveTo(int oldRow, int oldCol, int newRow, int newCol)
+bool Store::moveTo(int oldRow, int oldCol, int newRow, int newCol)
 {
     if (oldRow < 0 || oldRow >= rows || oldCol < 0 || oldCol >= cols ||
         newRow < 0 || newRow >= rows || newCol < 0 || newCol >= cols) {
@@ -178,7 +162,7 @@ bool Inventory::moveTo(int oldRow, int oldCol, int newRow, int newCol)
     return true;
 }
 
-void Inventory::sort()
+void Store::sort()
 {
     std::vector<Item*> allItems;
 
@@ -195,4 +179,3 @@ void Inventory::sort()
         addItem(item);
     }
 }
-

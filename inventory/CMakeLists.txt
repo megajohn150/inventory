@@ -9,8 +9,14 @@ add_executable(inventory main.cpp
     item.h item.cpp
     inventory.h inventory.cpp
     player.h player.cpp
-    singlecharacter.h singlecharacter.cpp
     game.h game.cpp
+    charCheck.h
+    random.h random.cpp
+    menu.h menu.cpp
+    shop.h shop.cpp
+    store.h store.cpp
+
+
 )
 
 include(GNUInstallDirs)

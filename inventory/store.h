@@ -1,9 +1,9 @@
-#ifndef INVENTORY_H
-#define INVENTORY_H
+#ifndef STORE_H
+#define STORE_H
 #include "item.h"
 #include <iostream>
 #include <vector>
-class Inventory
+class Store
 {
 private:
     int rows;
@@ -12,8 +12,8 @@ private:
     int currentRow;
     int currentCol;
 public:
-    Inventory();
-    ~Inventory();
+    Store();
+    ~Store();
     void clear();
     void display();
     bool addItem(Item* item);
