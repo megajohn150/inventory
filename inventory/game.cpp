@@ -265,7 +265,7 @@ void Game::play()
             std::cout << "<===== Navigation guide =====>\n\n";
             std::cout << "For better user experience, please run this game in your system terminal, not in the code editor one\n~~~~~~~~~~~~~\n";
             std::cout << "Movement:\n W, S, A, D or arrow keys\n~~~~~~~~~~~~~\n";
-            std::cout << "Inventory functions:\n i - toggle info\n u - for use\n p - for weapon upgrade\n~~~~~~~~~~~~~\n";
+            std::cout << "Inventory functions:\n i - toggle info\n u - use\n p - weapon upgrade\n~~~~~~~~~~~~~\n";
             std::cout << "Shop functions:\n p - toggle price\n b - buy\n\n\n";
 
             userInput = int(getSingleChar());
