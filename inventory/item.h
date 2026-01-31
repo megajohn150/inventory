@@ -1,38 +1,57 @@
 #ifndef ITEM_H
 #define ITEM_H
 #include <string>
-// #include <time.h>
+#include <iostream>
+#include <time.h>
 enum Rarity {
     common,
-    magic,
-    rare
+    uncommon,
+    rare,
+    epic,
+    legendary,
+    unknown
 };
-
+enum Type {
+    wooden,
+    stone,
+    iron,
+    gold,
+    diamond
+};
 class Item
 {
 protected:
     std::string name;
     Rarity rarity;
     int durability;
-    int level;
     int price;
+    Type type;
+    std::string category;
+    // close range weapons
+    // long range weapons
+    // defensive equipment
+
 public:
     Item();
-    Item(const std::string &name, int price);
+    Item(const std::string &name, int price, const std::string &category);
 
+    //methods
+    void use();
+    void showInfo();
+    std::string getRarityString();
+    std::string getTypeString();
     //setters and getters
     std::string getName() const;
     void setName(const std::string &newName);
     Rarity getRarity() const;
     void setRarity(Rarity newRarity);
+    void upgradeType();
     int getDurability() const;
     void setDurability(int newDurability);
-    int getLevel() const;
-    void setLevel(int newLevel);
     int getPrice() const;
     void setPrice(int newPrice);
-    //other methods
-    void use();
+    std::string getCategory() const;
+    void setCategory(const std::string &newCategory);
 };
 
 #endif // ITEM_H

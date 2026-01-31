@@ -1,32 +1,39 @@
 #include "player.h"
 
-std::string Player::getName() const
-{
-    return name;
-}
-
 void Player::setName(const std::string &newName)
 {
     name = newName;
 }
 
-Inventory *Player::getInventory() const
+void Player::setInv(Inventory *newInv)
 {
-    return inventory;
+    inv = newInv;
 }
 
-void Player::setInventory(Inventory *newInventory)
+Inventory *Player::getInv() const
 {
-    inventory = newInventory;
+    return inv;
 }
 
-Player::Player()
+std::string Player::getName() const
 {
-    name = "John";
-    inventory = new Inventory();
+    return name;
+}
+
+Player::Player() {
+    this->name = "John";
+    this->inv = new Inventory();
+    inv->addItem(new Item("Sword", 50, "close range weapons"));
+}
+
+Player::Player(std::string name) {
+    this->name = name;
+    this->inv = new Inventory();
+    inv->addItem(new Item("Sword", 50, "close range weapons"));
 }
 
 Player::~Player()
 {
-    delete inventory;
+    delete inv;
 }
+
