@@ -169,7 +169,6 @@ void Game::play()
             case 105: // info
                 showInfo = !showInfo;
                 break;
-                break;
             case 117: // use
                 if (auto item = player->getInv()->getItemOnSelectedRC(player->getInv()->getCurrentRow(), player->getInv()->getCurrentCol())) {
                     system(CLEAR);
@@ -192,10 +191,44 @@ void Game::play()
                     getSingleChar();
                 }
                 break;
-            case KEY_BACK: state = STATE_MENU; break;
+            case KEY_BACK:
+                state = STATE_MENU;
+                showInfo = false;
+                break;
             }
         }
         else if (state == STATE_STORE) {
+            std::cout << "<===== Store =====>\n\n";
+            store->display();
+            std::cout << "\n\n\n";
+
+            userInput = int(getSingleChar());
+            switch (userInput) {
+            case 119: // w
+                store->setCurrentRow(store->getCurrentRow() - 1);
+                break;
+            case 115: // s
+                store->setCurrentRow(store->getCurrentRow() + 1);
+                break;
+            case 10: // enter linux
+            case 13: // enter windows
+            {
+                std::string selected = store->getItemOnSelectedRC(store->getCurrentRow(), store->getCurrentCol())->getName();
+
+                if (selected == "Buy") {
+                    state = STATE_STORE_SHOP;
+                }
+                else {
+                    state = STATE_STORE_SELL;
+                }
+                break;
+            }
+            case KEY_BACK:
+                state = STATE_MENU;
+                break;
+            }
+        }
+        else if(state == STATE_STORE_SHOP){
             std::cout << "<===== Shop =====>\n\n";
             shop->display();
 
@@ -227,8 +260,17 @@ void Game::play()
                 break;
             }
             case KEY_BACK:
-                state = STATE_MENU;
+                state = STATE_STORE;
                 showPrice = false;
+                break;
+            }
+        }
+        else if(state == STATE_STORE_SELL){
+            std::cout << "<===== Market =====>\n\n";
+            userInput = int(getSingleChar());
+            switch(userInput){
+            case KEY_BACK:
+                state = STATE_STORE;
                 break;
             }
         }
@@ -269,7 +311,7 @@ void Game::play()
 
             userInput = int(getSingleChar());
             switch(userInput){
-                case KEY_BACK: state = STATE_MENU; break;
+            case KEY_BACK: state = STATE_MENU; break;
             }
         }
     }
