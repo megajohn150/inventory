@@ -1,41 +1,13 @@
 #ifndef MENU_H
 #define MENU_H
-#include "item.h"
-#include <iostream>
-#include <vector>
-class Menu
+
+#include "gridbase.h"
+
+class Menu : public GridBase
 {
-private:
-    int rows;
-    int cols;
-    Item*** items;
-    int currentRow;
-    int currentCol;
 public:
     Menu();
-    ~Menu();
-    void clear();
-    void display();
-    bool addItem(Item* item);
-    bool removeItem(int row, int col);
-    bool moveTo(int oldRow, int oldCol, int newRow, int newCol);
-    void sort();
-
-
-    // getters & setters
-    int getRows() const;
-    void setRows(int newRows);
-    int getCols() const;
-    void setCols(int newCols);
-    Item ***getItems() const;
-    Item *getItemOnSelectedRC(int row, int col);
-    void setItems(Item ***newItems);
-    int getCurrentRow() const;
-    void setCurrentRow(int newCurrentRow);
-    int getCurrentCol() const;
-    void setCurrentCol(int newCurrentCol);
-
-
+    void display() override;
 };
 
-#endif // INVENTORY_H
+#endif
