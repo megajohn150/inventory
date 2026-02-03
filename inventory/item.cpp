@@ -41,7 +41,10 @@ void Item::upgradeType()
         std::cout << "Successfully upgraded " << this->name << " from gold to diamond!";
         break;
     case diamond:
-        std::cout << "Cannot upgrade item, its already diamond";
+        std::cout << "Cannot upgrade, item is already diamon";
+        break;
+    case unseen:
+        std::cout << "Cannot upgrade, item is already unseen";
         break;
     default:
         std::cout << "Cannot upgrade item";
@@ -92,6 +95,9 @@ void Item::use()
         break;
     case diamond:
         dmg = Random::range(1, 2);
+        break;
+    case unseen:
+        dmg = 1;
         break;
     default:
         return;
@@ -155,6 +161,9 @@ std::string Item::getTypeString()
     case diamond:
         return "Diamond";
         break;
+    case unseen:
+        return "Diamond";
+        break;
     default:
         return "Wooden";
         break;
@@ -172,12 +181,14 @@ void Item::setCategory(const std::string &newCategory)
 }
 
 Item::Item() {
-    name = "Stick";
+    name = "random";
     price = 1;
     durability = 100;
     rarity = common;
-
+    type = wooden;
+    category = "random";
 }
+
 
 Item::Item(const std::string &name, int price, const std::string &category)
     : name(name),
@@ -198,7 +209,7 @@ Item::Item(const std::string &name, int price, const std::string &category)
     else if(randNum > 92 && randNum <= 98) {
         rarity = epic;
     }
-    else {
+    else{
         rarity = legendary;
     }
     type = wooden;

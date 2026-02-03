@@ -16,7 +16,8 @@ enum Type {
     stone,
     iron,
     gold,
-    diamond
+    diamond,
+    unseen
 };
 class Item
 {
@@ -34,7 +35,7 @@ protected:
 public:
     Item();
     Item(const std::string &name, int price, const std::string &category);
-
+    virtual ~Item() = default;
     //methods
     void use();
     void showInfo();

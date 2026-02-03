@@ -54,7 +54,7 @@ Game::Game() {
     menu->addItem(new Item("Store", 1, "game"));
     menu->addItem(new Item("Map", 1, "game"));
     menu->addItem(new Item("Navigation guide", 1, "game"));
-    store->addItem(new Item("Shop", 1, "game"));
+    store->addItem(new Item("Buy", 1, "game"));
     store->addItem(new Item("Sell", 1, "game"));
 
     // close range weapons
@@ -79,6 +79,9 @@ Game::~Game()
 {
     delete this->player;
     delete this->menu;
+    delete this->shop;
+    delete this->store;
+
 }
 
 
@@ -129,7 +132,15 @@ void Game::play()
             case 10: // enter linux
             case 13: // enter windows
             {
-                std::string selected = menu->getItemOnSelectedRC(menu->getCurrentRow(), menu->getCurrentCol())->getName();
+                auto item = menu->getItemOnSelectedRC(
+                    menu->getCurrentRow(),
+                    menu->getCurrentCol()
+                    );
+
+                if (!item) break;
+
+                std::string selected = item->getName();
+
 
                 if (selected == "Inventory") {
                     state = STATE_INVENTORY;
@@ -213,7 +224,15 @@ void Game::play()
             case 10: // enter linux
             case 13: // enter windows
             {
-                std::string selected = store->getItemOnSelectedRC(store->getCurrentRow(), store->getCurrentCol())->getName();
+                auto item = store->getItemOnSelectedRC(
+                    store->getCurrentRow(),
+                    store->getCurrentCol()
+                    );
+
+                if (!item) break;
+
+                std::string selected = item->getName();
+
 
                 if (selected == "Buy") {
                     state = STATE_STORE_SHOP;
@@ -245,20 +264,24 @@ void Game::play()
             case 'p': // toggle price
                 showPrice = !showPrice;
                 break;
-            case 'b':{
-                auto item = this->shop->getItemOnSelectedRC(shop->getCurrentRow(), shop->getCurrentCol());
-                if(player->getInv()->addItem(new Item(item->getName(), item->getPrice(), item->getCategory()))){
+            case 'b': {
+                auto src = shop->getItemOnSelectedRC(shop->getCurrentRow(), shop->getCurrentCol());
+                if (!src) break;
+
+                Item* newItem = new Item(src->getName(), src->getPrice(), src->getCategory());
+
+                if (player->getInv()->addItem(newItem)) {
                     system(CLEAR);
-                    std::cout << "Successfully bought " << item->getName();
-                    getSingleChar();
-                }
-                else{
+                    std::cout << "Successfully bought " << src->getName();
+                } else {
+                    delete newItem;
                     system(CLEAR);
                     std::cout << "Cannot buy any more items, inventory is full";
-                    getSingleChar();
                 }
+                getSingleChar();
                 break;
             }
+
             case KEY_BACK:
                 state = STATE_STORE;
                 showPrice = false;
@@ -316,8 +339,6 @@ void Game::play()
         }
     }
 }
-
-
 
 
     // enter : 10

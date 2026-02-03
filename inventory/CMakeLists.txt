@@ -15,6 +15,7 @@ add_executable(inventory main.cpp
     menu.h menu.cpp
     shop.h shop.cpp
     store.h store.cpp
+    gridbase.h gridbase.cpp
 
 
 )
