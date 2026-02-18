@@ -88,7 +88,7 @@ Player can buy, sell, upgrade, and repair items while earning money through game
 # Build Instructions (Windows)
 ###P.s. Have fun 
 
-## [x] Variant 1 — MSYS2 Already Installed
+## ✔️ Variant 1 — MSYS2 Already Installed
 
 This project requires **MSYS2** with `g++`.
 
@@ -96,29 +96,30 @@ If you already have **MSYS2** installed:
 
 1. Open **MSYS2 UCRT64** terminal.
 2. Navigate to the project directory:
-
->cd /c/path/to/project
-
-###3. Compile the program:
-
-g++ main.cpp -o program.exe
-
-###4. Run the program:
-
->./program.exe
-
-## [] Variant 2 — MSYS2 Not Installed
-###1. Install MSYS2
+```
+cd /c/path/to/project
+```
+### 3. Compile the program:
+```
+g++ *.cpp -o game.exe
+```
+### 4. Run the program:
+```
+./program.exe
+```
+## ❌ Variant 2 — MSYS2 Not Installed
+### 1. Install MSYS2
 
 Download MSYS2 from the [official website](https://www.msys2.org/).
 
 Install it using the default path (recommended: C:\msys64).
 
-###2. Update Packages
+### 2. Update Packages
 
 Open MSYS2 UCRT64 and run:
-
->pacman -Syu
+```
+pacman -Syu
+```
 
 If prompted to restart the terminal:
 
@@ -127,42 +128,42 @@ If prompted to restart the terminal:
 - Open MSYS2 UCRT64 again
 
 - Run the same command:
-
->pacman -Syu
-
-###3. Install g++
+```
+pacman -Syu
+```
+### 3. Install g++
 
 In the MSYS2 terminal, run:
-
->pacman -S mingw-w64-ucrt-x86_64-gcc
-
+```
+pacman -S mingw-w64-ucrt-x86_64-gcc
+```
 Confirm installation with Y.
 
-###4. Build the Project
+### 4. Build the Project
 
 Navigate to your project folder:
 
-cd /c/path/to/project 	(to make it work always use **"/" not "\"**  and disk name must be **"/disk letter/"**)
+cd /c/path/to/project 	(to make it work always use **"/" not "\"**  and disk name must be **"/disk letter/"**) ⚠️
 
 Compile:
-
->g++ *.cpp -o game.exe
-
+```
+g++ *.cpp -o game.exe
+```
 Before run:
 
 >clear
 
 Run:
-
->./game.exe
-
-###Verifying installation:
+```
+./game.exe
+```
+### Verifying installation:
 
 Run:
-
->g++ --version
-
-##All of commands must be run in MSYS2 Terminal!!!
+```
+g++ --version
+```
+## All of commands must be run in MSYS2 Terminal ‼️
 ---
 
 ## Purpose
