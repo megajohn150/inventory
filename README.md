@@ -74,19 +74,22 @@ Player can buy, sell, upgrade, and repair items while earning money through game
 
 ## How to Run (macos)
 1. Go to project location in terminal using cd:
-  - .../project_folder
-
+```
+.../project_folder
+```
 2. Compile:
-  - g++ -std=c++17 -Wall *.cpp -o inventory
-
+```
+g++ -std=c++17 -Wall *.cpp -o inventory
+```
 3. Run:
-  - ./inventory
-
+```
+./inventory
+```
 
 ---
 
 # Build Instructions (Windows)
-###P.s. Have fun 
+Have fun :))
 
 ## ✔️ Variant 1 — MSYS2 Already Installed
 
