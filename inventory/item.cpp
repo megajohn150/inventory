@@ -25,6 +25,13 @@ static std::string rarityColor(Rarity r) {
     }
 }
 
+static std::string durabilityColor(int dur) {
+    if (dur > 60) return Color::GREEN;
+    if (dur > 30) return Color::YELLOW;
+    if (dur > 10) return Color::RED;
+    return Color::MAGENTA;
+}
+
 std::string Item::getName() const
 {
     return name;
@@ -137,7 +144,8 @@ void Item::showInfo()
 {
     std::cout << "Item - " << Item::getTypeString() << " " <<this->name << " (" << rarityColor(Item::getRarity()) << Item::getRarityString()<<Color::RESET<<")" << "\n";
     std::cout << "Price - " << this->price << "\n";
-    std::cout << "Durability - " << this->durability << "/100 \n";
+    std::cout << "Durability - " << durabilityColor(this->durability)
+              << this->durability << Color::RESET<< "/100"  << "\n";
 }
 
 std::string Item::getRarityString()
@@ -248,4 +256,3 @@ Item::Item(const std::string &name, int price, const std::string &category)
     }
     type = wooden;
 }
-
