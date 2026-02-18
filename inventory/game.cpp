@@ -14,6 +14,35 @@ void Game::setShop(Shop *newShop) { shop = newShop; }
 Store *Game::getStore() const { return store; }
 void Game::setStore(Store *newStore) { store = newStore; }
 
+namespace Color {
+const std::string RED     = "\033[31m";
+const std::string GREEN = "\033[92m";
+const std::string YELLOW  = "\033[33m";
+const std::string BLUE = "\033[38;5;75m";
+const std::string MAGENTA = "\033[35m";
+const std::string CYAN    = "\033[36m";
+const std::string WHITE   = "\033[37m";
+const std::string BOLD    = "\033[1m";
+const std::string RESET   = "\033[0m";
+}
+
+static std::string rarityColor(Rarity r) {
+    switch (r) {
+    case common:    return Color::WHITE;
+    case uncommon:  return Color::GREEN;
+    case rare:      return Color::BLUE;
+    case epic:      return Color::MAGENTA;
+    case legendary: return Color::YELLOW;
+    case unknown:   return Color::CYAN;
+    default:        return Color::WHITE;
+    }
+}
+static std::string durabilityColor(int dur) {
+    if (dur > 60) return Color::GREEN;
+    if (dur > 30) return Color::YELLOW;
+    if (dur > 10) return Color::RED;
+    return Color::MAGENTA;
+}
 Game::Game() {
     this->player = new Player();
     this->menu   = new Menu();
@@ -265,8 +294,11 @@ void Game::play() {
                 std::string slot = (activeWeapon == player->getEquip()->getMelee()) ? "melee" : "ranged";
                 std::cout << "Active weapon [" << slot << "]: "
                           << activeWeapon->getTypeString() << " " << activeWeapon->getName()
-                          << " (" << activeWeapon->getRarityString() << ")"
-                          << "  -  Durability: " << activeWeapon->getDurability() << "/100\n";
+                          << " (" << rarityColor(activeWeapon->getRarity())
+                          << activeWeapon->getRarityString()
+                          << Color::RESET << ")"
+                          << "  -  Durabilty: " << durabilityColor(activeWeapon->getDurability())
+                          << activeWeapon->getDurability() << Color::RESET << "/100"  << "\n";
             } else {
                 std::cout << "Active weapon: none\n";
             }
