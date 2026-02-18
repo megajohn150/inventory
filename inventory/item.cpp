@@ -1,6 +1,30 @@
 #include "item.h"
 #include "random.h"
 
+namespace Color {
+const std::string RED     = "\033[31m";
+const std::string GREEN = "\033[92m";
+const std::string YELLOW  = "\033[33m";
+const std::string BLUE = "\033[38;5;75m";
+const std::string MAGENTA = "\033[35m";
+const std::string CYAN    = "\033[36m";
+const std::string WHITE   = "\033[37m";
+const std::string BOLD    = "\033[1m";
+const std::string RESET   = "\033[0m";
+}
+
+static std::string rarityColor(Rarity r) {
+    switch (r) {
+    case common:    return Color::WHITE;
+    case uncommon:  return Color::GREEN;
+    case rare:      return Color::BLUE;
+    case epic:      return Color::MAGENTA;
+    case legendary: return Color::YELLOW;
+    case unknown:   return Color::CYAN;
+    default:        return Color::WHITE;
+    }
+}
+
 std::string Item::getName() const
 {
     return name;
@@ -111,7 +135,7 @@ void Item::use()
 
 void Item::showInfo()
 {
-    std::cout << "Item - " << Item::getTypeString() << " " <<this->name << " (" << Item::getRarityString()<<")" << "\n";
+    std::cout << "Item - " << Item::getTypeString() << " " <<this->name << " (" << rarityColor(Item::getRarity()) << Item::getRarityString()<<Color::RESET<<")" << "\n";
     std::cout << "Price - " << this->price << "\n";
     std::cout << "Durability - " << this->durability << "/100 \n";
 }
@@ -224,3 +248,4 @@ Item::Item(const std::string &name, int price, const std::string &category)
     }
     type = wooden;
 }
+
