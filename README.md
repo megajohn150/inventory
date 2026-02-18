@@ -150,9 +150,9 @@ Compile:
 g++ *.cpp -o game.exe
 ```
 Before run:
-
->clear
-
+```
+clear
+```
 Run:
 ```
 ./game.exe
