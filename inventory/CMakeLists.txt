@@ -16,6 +16,7 @@ add_executable(inventory main.cpp
     shop.h shop.cpp
     store.h store.cpp
     gridbase.h gridbase.cpp
+    equipment.h equipment.cpp
 
 
 )

@@ -3,27 +3,38 @@
 
 Inventory::Inventory() : GridBase(4, 4) {}
 
-void Inventory::display()
+void Inventory::display(Equipment* eq, bool equipMode)
 {
-    for (int i = 0; i < rows; i++){
-        for (int j = 0; j < cols; j++){
+    // ---- GRID 4x4 ----
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            bool selected = !equipMode && (i == currentRow && j == currentCol);
 
-            if (i == currentRow && j == currentCol)
-                std::cout << ">[";
-            else
-                std::cout << " [";
+            if (selected) std::cout << ">[";
+            else          std::cout << " [";
 
-            if (items[i][j] == nullptr){
+            if (items[i][j] == nullptr)
                 std::cout << " ";
-            } else {
-                std::cout << char(std::toupper(items[i][j]->getName()[0]));
-            }
-
-            if (i == currentRow && j == currentCol)
-                std::cout << "]<";
             else
-                std::cout << "] ";
+                std::cout << char(std::toupper(items[i][j]->getName()[0]));
+
+            if (selected) std::cout << "]<";
+            else          std::cout << "] ";
         }
         std::cout << "\n";
+    }
+
+    std::cout << "\n";
+
+    // ---- SYLWETKA ----
+    if (eq)
+        eq->display(equipMode);
+    else {
+        // pusty ludzik gdy nie ma equipment
+        std::cout << "         [ ]\n";
+        std::cout << "     [ ][   ][ ]\n";
+        std::cout << "     { }[   ]{ }\n";
+        std::cout << "        [ | ]\n";
+        std::cout << "        [ | ]\n";
     }
 }

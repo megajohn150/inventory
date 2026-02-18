@@ -22,7 +22,7 @@ void Shop::display()
 
     std::cout << "~~~~~~~~~~~~~\nDefensive equipment:\n";
     for (int i = 0; i < rows; i++){
-        if (items[i][0] && items[i][0]->getCategory() == "defensive equipment"){
+        if (items[i][0] && items[i][0]->getCategory() == "armor"){
             if (i == currentRow) std::cout << " > ";
             std::cout << items[i][0]->getName() << "\n";
         }

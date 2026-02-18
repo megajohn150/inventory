@@ -11,7 +11,8 @@ enum GameState {
     STATE_MAP,
     STATE_NAVIGATION,
     STATE_STORE_SHOP,
-    STATE_STORE_SELL
+    STATE_STORE_SELL,
+    STATE_PLAY
 };
 
 class Game
