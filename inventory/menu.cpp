@@ -1,6 +1,6 @@
 #include "menu.h"
 
-Menu::Menu() : GridBase(4, 1) {}
+Menu::Menu() : GridBase(5, 1) {}
 
 void Menu::display()
 {

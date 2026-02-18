@@ -41,7 +41,7 @@ void Item::upgradeType()
         std::cout << "Successfully upgraded " << this->name << " from gold to diamond!";
         break;
     case diamond:
-        std::cout << "Cannot upgrade, item is already diamon";
+        std::cout << "Cannot upgrade, item is already diamond";
         break;
     case unseen:
         std::cout << "Cannot upgrade, item is already unseen";
@@ -162,7 +162,7 @@ std::string Item::getTypeString()
         return "Diamond";
         break;
     case unseen:
-        return "Diamond";
+        return "Unseen";
         break;
     default:
         return "Wooden";
@@ -178,6 +178,16 @@ std::string Item::getCategory() const
 void Item::setCategory(const std::string &newCategory)
 {
     category = newCategory;
+}
+
+Type Item::getType() const
+{
+    return type;
+}
+
+void Item::setType(Type newType)
+{
+    type = newType;
 }
 
 Item::Item() {

@@ -53,6 +53,8 @@ public:
     void setPrice(int newPrice);
     std::string getCategory() const;
     void setCategory(const std::string &newCategory);
+    Type getType() const;
+    void setType(Type newType);
 };
 
 #endif // ITEM_H
