@@ -26,11 +26,9 @@ void Inventory::display(Equipment* eq, bool equipMode)
 
     std::cout << "\n";
 
-    // ---- SYLWETKA ----
     if (eq)
         eq->display(equipMode);
     else {
-        // pusty ludzik gdy nie ma equipment
         std::cout << "         [ ]\n";
         std::cout << "     [ ][   ][ ]\n";
         std::cout << "     { }[   ]{ }\n";
