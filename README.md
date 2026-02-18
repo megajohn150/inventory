@@ -72,7 +72,7 @@ Player can buy, sell, upgrade, and repair items while earning money through game
 
 ---
 
-## How to Run
+## How to Run (macos)
 1. Go to project location in terminal using cd:
    - .../project_folder
 
