@@ -56,31 +56,31 @@ Player can buy, sell, upgrade, and repair items while earning money through game
 - Full navigation guide.
 
 ## Project Structure
-main.cpp
-item.h item.cpp
-inventory.h inventory.cpp
-player.h player.cpp
-game.h game.cpp
-charCheck.h
-random.h random.cpp
-menu.h menu.cpp
-shop.h shop.cpp
-store.h store.cpp
-gridbase.h gridbase.cpp
-equipment.h equipment.cpp
+  - main.cpp
+  - item.h item.cpp
+  - inventory.h inventory.cpp
+  - player.h player.cpp
+  - game.h game.cpp
+  - charCheck.h
+  - random.h random.cpp
+  - menu.h menu.cpp
+  - shop.h shop.cpp
+  - store.h store.cpp
+  - gridbase.h gridbase.cpp
+  - equipment.h equipment.cpp
 
 
 ---
 
 ## How to Run
 1. Go to project location in terminal using cd:
-.../project_folder
+   - .../project_folder
 
-2. Compile:
-g++ -std=c++17 -Wall *.cpp -o inventory
+3. Compile:
+  - g++ -std=c++17 -Wall *.cpp -o inventory
 
 3. Run:
-./inventory
+  - ./inventory
 
 
 ---
