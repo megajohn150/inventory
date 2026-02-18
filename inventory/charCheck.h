@@ -63,7 +63,15 @@
 // f
 char getSingleChar() {
 #ifdef _WIN32
-    return _getch(); // Windows: Get character without Enter
+    char ch;
+    ch = _getch();  // Windows: Get character without Enter
+    switch (ch) {
+    case 72 : ch = 'w'; break; //Up
+    case 80 : ch = 's'; break; // Down
+    case 75 : ch = 'a'; break; // Left
+    case 77 : ch = 'd'; break; // Right
+    }
+    return ch;
 #elif __APPLE__
     struct termios oldt, newt;
     char ch;

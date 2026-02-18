@@ -17,15 +17,12 @@ public:
     Player(std::string name);
     ~Player();
 
-    // equip item z gridu (row/col = pozycja kursora)
-    // zwraca false jesli brak itemu lub nieznana kategoria
+
     bool equipFromInventory(int row, int col);
 
-    // unequip wybranego slotu z sylwetki, wraca na grid
-    // zwraca false jesli slot pusty lub inventory pelne
     bool unequipToInventory();
 
-    // settery / gettery
+    // setters and getters
     void       setName(const std::string& newName);
     std::string getName() const;
     int        getMoney() const;

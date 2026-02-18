@@ -241,7 +241,7 @@ void Game::play() {
                 system(CLEAR);
                 std::cout << "Are you sure you want to quit? Your progress will be lost (press ";
                 if(KEY_BACK == 127){std::cout<<"delete";}
-                else{std::cout<<"esc";};
+                else{std::cout<<"Backspace";};
                 std::cout<<" to confirm)";
                 int confirm = int(getSingleChar());
                 if (confirm == KEY_BACK)
@@ -915,13 +915,13 @@ void Game::play() {
             std::cout << "|     ''                          M M   |\n";
             std::cout << "|               @@                M M   |\n";
             std::cout << "| @       ''    @&@        M    M M M   |\n";
-            std::cout << "|@@@            @&@      M  M  M    M⠀⠀⠀|\n";
-            std::cout << "|@&@@⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀&⠀⠀⠀⠀⠀M⠀⠀⠀⠀⠀M⠀    ⠀⠀M⠀⠀|\n";
-            std::cout << "|@&@@⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀M ⠀⠀M⠀⠀⠀⠀⠀⠀⠀⠀⠀    ⠀ M⠀⠀|\n";
-            std::cout << "|⠀&⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀M⠀M⠀⠀M⠀⠀⠀⠀⠀⠀⠀⠀    ⠀⠀ MM⠀|\n";
-            std::cout << "|⠀&⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀M⠀⠀ M⠀M⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀     M⠀|\n";
-            std::cout << "|##⠀⠀⠀⠀⠀⠀⠀⠀⠀  ⠀M⠀⠀⠀MM⠀⠀⠀⠀⠀⠀ ⠀⠀    ⠀⠀⠀ M⠀|\n";
-            std::cout << "|###~~~~~~~~~~M                       M⠀|\n";
+            std::cout << "|@@@            @&@      M  M  M    M   |\n";
+            std::cout << "|@&@@             &     M      M     M  |\n";
+            std::cout << "|@&@@             M   M              M  |\n";
+            std::cout << "| &              M M  M              MM |\n";
+            std::cout << "| &             M   M M               M |\n";
+            std::cout << "|##             M   MM                M |\n";
+            std::cout << "|###~~~~~~~~~~M                       M |\n";
             std::cout << "|####~~~~~~~~~M                       MM|\n";
             std::cout << "|#####~~~~~~~M                          |\n";
             std::cout << "‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\n";
@@ -935,16 +935,16 @@ void Game::play() {
         }
         else if(state == STATE_NAVIGATION) {
             std::cout << "For better user experience, please run this game in bigger screen view (so that everything fits in one screen, no scrolling needed)\n\n";
-            std::cout << "\n<===== Navigation guide =====>\n\n";
-            std::cout << "Movement:\n W, S, A, D or arrow keys\n\n";
+            std::cout << "<===== Navigation guide =====>\n\n";
+            std::cout << "Movement:\n W, S, A, D or arrow keys\n~~~~~~~~~~~~~\n";
             std::cout << "Inventory functions:\ntab- change select \n i - toggle info\n p - weapon upgrade\n r - repair item\n e - equip/unequip item";
-            std::cout << "\n\nStore functions:\n p - toggle price\n b - buy\n s - sell\n\n\n";
+            std::cout << "Store functions:\n p - toggle price\n b - buy\n s - sell\n\n";
             std::cout << "<===== Upgrade prices =====>\n\n";
             std::cout << " Wooden -> stone - 20\n";
             std::cout << " Stone -> iron - 50\n";
             std::cout << " Iron -> gold - 120\n";
             std::cout << " Gold -> Diamond - 280\n\n";
-            std::cout << "\n<===== Repair prices =====>\n\n";
+            std::cout << "\n\n<===== Repair prices =====>\n\n";
             std::cout << "Price for full repair (1-100)\n Wooden - 10\n Stone - 25\n Iron - 60\n Gold - 150\n Diamond - 300\n Unseen - 600\n";
             userInput = int(getSingleChar());
             switch(userInput){
