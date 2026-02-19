@@ -4,7 +4,7 @@
 namespace Color {
 const std::string RED     = "\033[31m";
 const std::string GREEN = "\033[92m";
-const std::string YELLOW  = "\033[33m";
+const std::string YELLOW  = "\033[93m";
 const std::string BLUE = "\033[38;5;75m";
 const std::string MAGENTA = "\033[35m";
 const std::string CYAN    = "\033[36m";
@@ -28,7 +28,7 @@ static std::string rarityColor(Rarity r) {
 static std::string durabilityColor(int dur) {
     if (dur > 60) return Color::GREEN;
     if (dur > 30) return Color::YELLOW;
-    if (dur > 10) return Color::RED;
+    if (dur > 0) return Color::RED;
     return Color::MAGENTA;
 }
 

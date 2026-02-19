@@ -17,7 +17,7 @@ void Game::setStore(Store *newStore) { store = newStore; }
 namespace Color {
 const std::string RED     = "\033[31m";
 const std::string GREEN = "\033[92m";
-const std::string YELLOW  = "\033[33m";
+const std::string YELLOW  = "\033[93m";
 const std::string BLUE = "\033[38;5;75m";
 const std::string MAGENTA = "\033[35m";
 const std::string CYAN    = "\033[36m";
@@ -40,7 +40,7 @@ static std::string rarityColor(Rarity r) {
 static std::string durabilityColor(int dur) {
     if (dur > 60) return Color::GREEN;
     if (dur > 30) return Color::YELLOW;
-    if (dur > 10) return Color::RED;
+    if (dur > 0) return Color::RED;
     return Color::MAGENTA;
 }
 Game::Game() {
@@ -344,7 +344,7 @@ void Game::play() {
                     player->getEquip()->moveCursor(1);
 
                 activeWeapon = nullptr;
-                lastEvent = "!! " + brokenName + " has broke.";
+                lastEvent = "!! " + brokenName + " has broken.";
                 continue;
             }
 
@@ -970,14 +970,20 @@ void Game::play() {
             std::cout << "<===== Navigation guide =====>\n\n";
             std::cout << "Movement:\n W, S, A, D or arrow keys\n~~~~~~~~~~~~~\n";
             std::cout << "Inventory functions:\ntab- change select \n i - toggle info\n p - weapon upgrade\n r - repair item\n e - equip/unequip item";
-            std::cout << "Store functions:\n p - toggle price\n b - buy\n s - sell\n\n";
+            std::cout << "Store functions:\n p - toggle price\n b - buy\n s - sell\n\n\n";
             std::cout << "<===== Upgrade prices =====>\n\n";
             std::cout << " Wooden -> stone - 20\n";
-            std::cout << " Stone -> iron - 50\n";
-            std::cout << " Iron -> gold - 120\n";
+            std::cout << " Stone -> iron   - 50\n";
+            std::cout << " Iron -> gold    - 120\n";
             std::cout << " Gold -> Diamond - 280\n\n";
-            std::cout << "\n\n<===== Repair prices =====>\n\n";
-            std::cout << "Price for full repair (1-100)\n Wooden - 10\n Stone - 25\n Iron - 60\n Gold - 150\n Diamond - 300\n Unseen - 600\n";
+            std::cout << "\n<===== Repair prices =====>\n\n";
+            std::cout << "Price for full repair (1-100)\n Wooden  - 10\n Stone   - 25\n Iron   - 60\n Gold    - 150\n Diamond - 300\n Unseen  - 600\n";
+            std::cout << "\n\n<===== Item rarity chances =====>\n\n";
+            std::cout << " Common    - 50%\n";
+            std::cout << " Uncommon  - 28%\n";
+            std::cout << " Rare      - 14%\n";
+            std::cout << " Epic      -  6%\n";
+            std::cout << " Legendary -  2%\n\n";
             userInput = int(getSingleChar());
             switch(userInput){
             case KEY_BACK: state = STATE_MENU; break;
