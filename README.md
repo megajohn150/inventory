@@ -107,7 +107,7 @@ cd /c/path/to/project
 g++ *.cpp -o game.exe
 ```
 ### 4. Run the program:
-**Before running: **
+**Before running:**
 ```
 clear
 ```
