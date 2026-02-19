@@ -104,11 +104,15 @@ cd /c/path/to/project
 ```
 ### 3. Compile the program:
 ```
-g++ -std=c++17 -Wall *.cpp -o inventory
+g++ *.cpp -o game.exe
 ```
 ### 4. Run the program:
+**Before running: **
 ```
-./program.exe
+clear
+```
+```
+./game.exe
 ```
 ## ❌ Variant 2 — MSYS2 Not Installed
 ### 1. Install MSYS2
