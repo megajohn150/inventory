@@ -104,7 +104,7 @@ cd /c/path/to/project
 ```
 ### 3. Compile the program:
 ```
-g++ *.cpp -o game.exe
+g++ -std=c++17 -Wall *.cpp -o inventory
 ```
 ### 4. Run the program:
 ```
