@@ -146,7 +146,7 @@ Confirm installation with Y.
 
 Navigate to your project folder:
 
-cd /c/path/to/project 	(to make it work always use **"/" not "\"**  and disk name must be **"/disk letter/"**) ⚠️
+cd /c/path/to/project 	(to make it work always use **"/" not backslash**  and disk name must be **"/disk letter/"**) ⚠️
 
 Compile:
 ```
