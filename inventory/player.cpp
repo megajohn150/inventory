@@ -4,6 +4,7 @@ Player::Player()
 {
     this->name  = "John";
     this->money = 0;
+    this->hp = 100;
     this->inv   = new Inventory();
     this->equip = new Equipment();
     inv->addItem(new Item("Sword", 15, "close range weapons"));
@@ -13,6 +14,7 @@ Player::Player(std::string name)
 {
     this->name  = name;
     this->money = 0;
+    this->hp = 100;
     this->inv   = new Inventory();
     this->equip = new Equipment();
     inv->addItem(new Item("Sword", 15, "close range weapons"));
@@ -65,6 +67,8 @@ void        Player::setName(const std::string& newName) { name = newName; }
 std::string Player::getName()  const { return name; }
 int         Player::getMoney() const { return money; }
 void        Player::setMoney(int newMoney) { money = newMoney; }
+int         Player::getHp() const { return hp; }
+void        Player::setHp(int newHp) {hp = newHp; }
 void        Player::setInv(Inventory* newInv) { inv = newInv; }
 Inventory*  Player::getInv()   const { return inv; }
 Equipment*  Player::getEquip() const { return equip; }
