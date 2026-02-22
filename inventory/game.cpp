@@ -15,13 +15,13 @@ Store *Game::getStore() const { return store; }
 void Game::setStore(Store *newStore) { store = newStore; }
 
 namespace Color {
-const std::string RED     = "\033[31m";
-const std::string GREEN = "\033[92m";
+const std::string RED     = "\033[91m";
+const std::string GREEN   = "\033[92m";
 const std::string YELLOW  = "\033[93m";
-const std::string BLUE = "\033[38;5;75m";
-const std::string MAGENTA = "\033[35m";
-const std::string CYAN    = "\033[36m";
-const std::string WHITE   = "\033[37m";
+const std::string BLUE    = "\033[38;5;75m";
+const std::string MAGENTA = "\033[95m";
+const std::string CYAN    = "\033[96m";
+const std::string WHITE   = "\033[97m";
 const std::string BOLD    = "\033[1m";
 const std::string RESET   = "\033[0m";
 }
@@ -37,17 +37,20 @@ static std::string rarityColor(Rarity r) {
     default:        return Color::WHITE;
     }
 }
+
 static std::string durabilityColor(int dur) {
     if (dur > 60) return Color::GREEN;
     if (dur > 30) return Color::YELLOW;
-    if (dur > 0) return Color::RED;
+    if (dur > 0)  return Color::RED;
     return Color::MAGENTA;
 }
-static std::string hpColor(int hp){
-    if(hp > 60) return Color::GREEN;
-    if(hp > 30) return Color::YELLOW;
+
+static std::string hpColor(int hp) {
+    if (hp > 60) return Color::GREEN;
+    if (hp > 30) return Color::YELLOW;
     return Color::RED;
 }
+
 Game::Game() {
     this->player = new Player();
     this->menu   = new Menu();
@@ -63,27 +66,22 @@ Game::Game() {
     store->addItem(new Item("Buy",  1, "game"));
     store->addItem(new Item("Sell", 1, "game"));
 
-    // close range weapons
     shop->addItem(new Item("Sword",   15, "close range weapons"));
     shop->addItem(new Item("Katana",  35, "close range weapons"));
     shop->addItem(new Item("Hammer",  30, "close range weapons"));
     shop->addItem(new Item("Spear",   25, "close range weapons"));
     shop->addItem(new Item("Axe",     30, "close range weapons"));
 
-    // long range weapons
     shop->addItem(new Item("Bow",      30, "long range weapons"));
     shop->addItem(new Item("Crossbow", 45, "long range weapons"));
     shop->addItem(new Item("Sling",    12, "long range weapons"));
 
-    // armor
-    shop->addItem(new Item("Used armor", 20,  "armor"));
-    shop->addItem(new Item("Armor",  50,  "armor"));
+    shop->addItem(new Item("Used armor", 20, "armor"));
+    shop->addItem(new Item("Armor",      50, "armor"));
 
-    //First-Aid kits
-    shop->addItem(new Item("Small First-Aid kit", 20, "medkit"));
-    shop->addItem(new Item("Medium First-Aid kit", 50, "medkit"));
-    shop->addItem(new Item("Big First-Aid kit", 100, "medkit"));
-
+    shop->addItem(new Item("Small First-Aid kit",  10, "medkit"));
+    shop->addItem(new Item("Medium First-Aid kit", 30, "medkit"));
+    shop->addItem(new Item("Big First-Aid kit",    60, "medkit"));
 }
 
 Game::~Game() {
@@ -102,8 +100,6 @@ void Game::setPlayerName() {
     this->player->setName(name);
 }
 
-// chooses the strongest weapon (close/long ranged)
-// earnign more coins when better weapon + boost based on rarity
 static Item* pickActiveWeapon(Item* melee, Item* ranged) {
     if (melee && ranged) {
         int meleeScore  = melee->getType()  * 10 + melee->getRarity();
@@ -114,13 +110,11 @@ static Item* pickActiveWeapon(Item* melee, Item* ranged) {
 }
 
 static int baseEarnByName(const std::string& name) {
-    // close range
     if (name == "Sword")    return 2;
     if (name == "Spear")    return 2;
     if (name == "Hammer")   return 3;
     if (name == "Axe")      return 3;
     if (name == "Katana")   return 4;
-    // long range
     if (name == "Sling")    return 1;
     if (name == "Bow")      return 3;
     if (name == "Crossbow") return 4;
@@ -139,9 +133,7 @@ static float rarityMultiplier(Rarity r) {
     }
 }
 
-// better armor + better weapon = less coins stolen
 static int zombieSteal(Item* weapon, Item* armor) {
-
     int base = 10;
     if (weapon) {
         switch (weapon->getType()) {
@@ -171,8 +163,8 @@ static int zombieSteal(Item* weapon, Item* armor) {
     if (armor) {
         float armorBase = 0.0f;
         if      (armor->getName() == "Used armor") armorBase = 0.20f;
-        else if (armor->getName() == "Armor")  armorBase = 0.40f;
-        else                                   armorBase = 0.15f;
+        else if (armor->getName() == "Armor")      armorBase = 0.40f;
+        else                                       armorBase = 0.15f;
 
         float rarityBonus = 0.0f;
         switch (armor->getRarity()) {
@@ -192,11 +184,10 @@ static int zombieSteal(Item* weapon, Item* armor) {
     return std::max(base, 0);
 }
 
-static int hpReducing(Item* armor){
+static int hpReducing(Item* armor) {
     int base = 0;
-    if(armor == nullptr){
-        base += Random::range(10, 40);
-    }
+    if (armor == nullptr)
+        base += Random::range(5, 20);
     return base;
 }
 
@@ -229,9 +220,47 @@ static int calculateSellPrice(Item* item) {
 
     float durMult = item->getDurability() / 100.0f;
     durMult = std::max(durMult, 0.1f);
+    durMult = std::min(durMult, 1.0f);
 
     return std::max(1, int(base * typeMult * rarityMult * durMult));
 }
+
+static void displayPlayHeader(Player* player, Item* activeWeapon, const std::string& lastEvent) {
+    std::cout << "<===== Play =====>\n\n";
+
+    if (activeWeapon) {
+        std::string slot = (activeWeapon == player->getEquip()->getMelee()) ? "melee" : "ranged";
+        std::cout << "Active weapon [" << slot << "]: "
+                  << activeWeapon->getTypeString() << " " << activeWeapon->getName()
+                  << " (" << rarityColor(activeWeapon->getRarity())
+                  << activeWeapon->getRarityString() << Color::RESET << ")"
+                  << "  -  Durability: "
+                  << durabilityColor(activeWeapon->getDurability())
+                  << activeWeapon->getDurability() << Color::RESET << "/100\n";
+    } else {
+        std::cout << "Active weapon: none\n";
+    }
+
+    // ZMIANA: Dodano durability armora
+    Item* armor = player->getEquip()->getArmor();
+    if (armor) {
+        std::cout << "Armor - "
+        << "Durability: "
+        << durabilityColor(armor->getDurability())
+        << armor->getDurability() << Color::RESET << "/100\n";
+    } else {
+        std::cout << "Armor: none\n";
+    }
+
+    std::cout << "Balance: " << player->getMoney()
+              << " | Health points: " << hpColor(player->getHp())
+              << player->getHp() << Color::RESET << "\n\n";
+    std::cout << "Click to fight!!  [H] use medkit\n";
+
+    if (!lastEvent.empty())
+        std::cout << "\n" << lastEvent << "\n";
+}
+
 void Game::play() {
 #ifdef __APPLE__
 #define KEY_BACK 127
@@ -239,26 +268,28 @@ void Game::play() {
 #define KEY_BACK 8
 #endif
 
-    int  userInput    = 0;
-    state             = STATE_MENU;
-    bool showPrice    = false;
-    bool showInfo     = false;
-    bool equipMode    = false;
-    bool used         = false;
-    bool used2        = false;
-    bool used3        = false;
-    bool repairPending = false;
-    int  repairCost    = 0;
-    int  repairTarget  = 0;
-    std::string secretCode = "";
-    std::string lastEvent  = "";
+    int  userInput      = 0;
+    state               = STATE_MENU;
+    bool showPrice      = false;
+    bool showInfo       = false;
+    bool equipMode      = false;
+    bool used           = false;
+    bool used2          = false;
+    bool used3          = false;
+    bool repairPending  = false;
+    int  repairCost     = 0;
+    int  repairTarget   = 0;
     bool upgradePending = false;
     int  upgradeCost    = 0;
     std::string upgradeFrom = "";
     std::string upgradeTo   = "";
-    bool sellPending = false;
-    int  sellPrice   = 0;
-    int  sellCursor = 0;
+    bool sellPending    = false;
+    int  sellPrice      = 0;
+    int  sellCursor     = 0;
+    int  medCursor      = 0;
+    std::string medkitMsg  = "";
+    std::string secretCode = "";
+    std::string lastEvent  = "";
 
     while (true) {
         system(CLEAR);
@@ -285,15 +316,13 @@ void Game::play() {
                 break;
             }
             case KEY_BACK: {
-
                 system(CLEAR);
                 std::cout << "Are you sure you want to quit? Your progress will be lost (press ";
-                if(KEY_BACK == 127){std::cout<<"delete";}
-                else{std::cout<<"Backspace";};
-                std::cout<<" to confirm)";
+                if (KEY_BACK == 127) std::cout << "delete";
+                else                 std::cout << "Backspace";
+                std::cout << " to confirm)";
                 int confirm = int(getSingleChar());
-                if (confirm == KEY_BACK)
-                    return;
+                if (confirm == KEY_BACK) return;
                 break;
             }
             }
@@ -302,45 +331,32 @@ void Game::play() {
         // ===================== PLAY =====================
         else if (state == STATE_PLAY) {
             system(CLEAR);
-            std::cout << "<===== Play =====>\n\n";
 
             Item* activeWeapon = pickActiveWeapon(
                 player->getEquip()->getMelee(),
                 player->getEquip()->getRanged()
                 );
 
-            if (activeWeapon) {
-                std::string slot = (activeWeapon == player->getEquip()->getMelee()) ? "melee" : "ranged";
-                std::cout << "Active weapon [" << slot << "]: "
-                          << activeWeapon->getTypeString() << " " << activeWeapon->getName()
-                          << " (" << rarityColor(activeWeapon->getRarity())
-                          << activeWeapon->getRarityString()
-                          << Color::RESET << ")"
-                          << "  -  Durabilty: " << durabilityColor(activeWeapon->getDurability())
-                          << activeWeapon->getDurability() << Color::RESET << "/100"  << "\n";
-            } else {
-                std::cout << "Active weapon: none\n";
-            }
-
-            std::cout << "Balance: " << player->getMoney() << " | Health points: " << hpColor(player->getHp()) <<player->getHp() << Color::RESET << "\n\n";
-            std::cout << "Click to fight!!\n";
-
-            if (!lastEvent.empty())
-                std::cout << "\n" << lastEvent << "\n";
+            displayPlayHeader(player, activeWeapon, lastEvent);
 
             userInput = int(getSingleChar());
 
             if (userInput == KEY_BACK) {
-                state       = STATE_MENU;
-                // earnedMoney = 0;
-                lastEvent   = "";
+                state     = STATE_MENU;
+                lastEvent = "";
                 continue;
             }
 
-
-            if(player->getHp() == 0){
-                lastEvent = "You died, restart the game to play";
+            // H: otworz okno apteczek jako overlay
+            if (userInput == 'h' || userInput == 'H') {
+                medCursor = 0;
+                state = STATE_PLAY_MEDKIT;
                 continue;
+            }
+
+            if (player->getHp() <= 0) {
+                // gracz juz martwy — dowolny klawisz = wyjscie
+                return;
             }
 
             Item* checkWeapon = pickActiveWeapon(
@@ -387,8 +403,8 @@ void Game::play() {
                 stolen = std::min(stolen, player->getMoney());
                 player->setMoney(player->getMoney() - stolen);
 
-                Item* armorItem = player->getEquip()->getArmor();
-                bool armorBroke = false;
+                Item* armorItem  = player->getEquip()->getArmor();
+                bool  armorBroke = false;
 
                 int reducedHp = hpReducing(armorItem);
                 reducedHp = std::min(reducedHp, player->getHp());
@@ -407,7 +423,6 @@ void Game::play() {
                             player->getEquip()->moveCursor(1);
                         armorBroke = true;
                         armorItem  = nullptr;
-
                     }
                 }
 
@@ -420,10 +435,6 @@ void Game::play() {
                     if (armorBroke) {
                         lastEvent = ">> Zombie attacked! You lost " + std::to_string(stolen)
                         + " coins and your armor broke!";
-
-                    } else if (armorItem) {
-                        lastEvent = ">> Zombie attacked! You lost " + std::to_string(stolen)
-                        + " coins. Armor: " + std::to_string(armorItem->getDurability()) + "/100";
                     } else {
                         lastEvent = ">> Zombie attacked! You lost " + std::to_string(stolen) + " coins.";
                     }
@@ -433,35 +444,153 @@ void Game::play() {
                 player->setMoney(player->getMoney() + earned);
             }
 
-            if(player->getHp() <= 0){
-                lastEvent = "You died!";
+            if (player->getHp() <= 0) {
                 player->setMoney(0);
                 player->unequipToInventory();
                 Inventory* inv = player->getInv();
                 inv->clearInv(player->getEquip());
+
+                // pokaz ekran smierci i czekaj na klawisz
+                system(CLEAR);
+                std::cout << "<===== Play =====>\n\n";
+                std::cout << "Balance: 0 | Health points: " << Color::RED << "0" << Color::RESET << "\n\n";
+                std::cout << Color::RED << Color::BOLD
+                          << "YOU DIED!\n\n" << Color::RESET;
+                std::cout << "Press any key to exit...\n";
+                getSingleChar();
+                return; // wyjdz z gry
+            }
+        }
+
+        // ===================== PLAY MEDKIT OVERLAY =====================
+        else if (state == STATE_PLAY_MEDKIT) {
+            system(CLEAR);
+
+            Item* activeWeapon = pickActiveWeapon(
+                player->getEquip()->getMelee(),
+                player->getEquip()->getRanged()
+                );
+            displayPlayHeader(player, activeWeapon, lastEvent);
+
+            std::cout << "\n~~~~~~~~~~~~~~~~~~~\n";
+            std::cout << "FIRST-AID KITS\n\n";
+
+            struct MedEntry {
+                Item* item;
+                int   invRow;
+                int   invCol;
+            };
+            std::vector<MedEntry> medList;
+
+            for (int i = 0; i < player->getInv()->getRows(); i++) {
+                for (int j = 0; j < player->getInv()->getCols(); j++) {
+                    Item* it = player->getInv()->getItems()[i][j];
+                    if (it && it->getCategory() == "medkit")
+                        medList.push_back({it, i, j});
+                }
+            }
+
+            if (medList.empty()) {
+                std::cout << "You have no First-Aid kits.\n\n";
+                std::cout << "[BACKSPACE] back\n";
+                userInput = int(getSingleChar());
+                if (userInput == KEY_BACK) state = STATE_PLAY;
                 continue;
+            }
+
+            if (medCursor >= int(medList.size())) medCursor = int(medList.size()) - 1;
+            if (medCursor < 0) medCursor = 0;
+
+            const int MED_COLS = 4;
+            int totalMeds = int(medList.size());
+            int medRows   = (totalMeds + MED_COLS - 1) / MED_COLS;
+
+            for (int i = 0; i < medRows; i++) {
+                for (int j = 0; j < MED_COLS; j++) {
+                    int idx = i * MED_COLS + j;
+                    if (idx >= totalMeds) { std::cout << "     "; continue; }
+                    bool selected = (idx == medCursor);
+                    char ch = char(std::toupper(medList[idx].item->getName()[0]));
+                    if (selected) std::cout << ">[" << ch << "]<";
+                    else          std::cout << " [" << ch << "] ";
+                }
+                std::cout << "\n";
+            }
+
+            std::cout << "\n";
+            Item* selMed = medList[medCursor].item;
+            std::cout << selMed->getName() << "\n";
+
+            int heals = 0;
+            std::string healStr = "";
+            if (selMed->getName() == "Small First-Aid kit") {
+                heals    = 40;
+                healStr  = "Heals: +" + std::to_string(heals) + " HP";
+            } else if (selMed->getName() == "Medium First-Aid kit") {
+                heals    = 60;
+                healStr  = "Heals: +" + std::to_string(heals) + " HP";
+            } else {
+                heals   = 100 - player->getHp();
+                healStr = "Heals: to full (+" + std::to_string(heals) + " HP)";
+            }
+            std::cout << Color::GREEN << healStr << Color::RESET << "\n\n";
+
+            if (player->getHp() == 100)
+                std::cout << Color::YELLOW << "Already at full HP!\n" << Color::RESET;
+
+            std::cout << "[A/D] move  [U] use  [BACKSPACE] back\n";
+
+            userInput = int(getSingleChar());
+            switch (userInput) {
+            case 'a':
+                medCursor--;
+                if (medCursor < 0) medCursor = int(medList.size()) - 1;
+                break;
+            case 'd':
+                medCursor++;
+                if (medCursor >= int(medList.size())) medCursor = 0;
+                break;
+            case 'u': case 'U': {
+                if (player->getHp() < 100) {
+                    std::string usedMedkitName = selMed->getName();
+
+                    player->setHp(std::min(player->getHp() + heals, 100));
+                    player->getInv()->removeItem(medList[medCursor].invRow, medList[medCursor].invCol);
+
+                    lastEvent = Color::GREEN + "Used " + usedMedkitName
+                                + "! HP: " + std::to_string(player->getHp()) + "/100" + Color::RESET;
+                    medCursor = 0;
+                    state = STATE_PLAY;
+                }
+                break;
+            }
+            case KEY_BACK:
+                medCursor = 0;
+                state = STATE_PLAY;
+                break;
+            default:
+                break;
             }
         }
 
         // ===================== INVENTORY =====================
         else if (state == STATE_INVENTORY) {
             std::cout << "<===== " << player->getName() << "'s inventory =====>\n\n";
-            std::cout << "Balance: " << player->getMoney() << "                 ";
-
+            std::cout << "Balance: " << player->getMoney()
+                      << " | HP: " << hpColor(player->getHp())
+                      << player->getHp() << Color::RESET
+                      << "                 ";
 
             if (equipMode)
                 std::cout << " [Inventory]  >[EQUIPMENT]<\n\n";
             else
                 std::cout << ">[INVENTORY]<  [Equipment]\n\n";
 
-
             player->getInv()->display(player->getEquip(), equipMode);
-
 
             if (showInfo) {
                 std::cout << "~~~~~~~~~~~~~~~~~~~\n";
                 if (!equipMode) {
-
                     if (auto item = player->getInv()->getItemOnSelectedRC(
                             player->getInv()->getCurrentRow(),
                             player->getInv()->getCurrentCol())) {
@@ -470,7 +599,6 @@ void Game::play() {
                         std::cout << "Empty slot\n";
                     }
                 } else {
-
                     int s = player->getEquip()->getCursorSlot();
                     Item* sel = nullptr;
                     if      (s == 0) sel = player->getEquip()->getArmor();
@@ -488,7 +616,6 @@ void Game::play() {
                 }
             }
 
-
             if (repairPending) {
                 if (auto item = player->getInv()->getItemOnSelectedRC(
                         player->getInv()->getCurrentRow(),
@@ -497,9 +624,12 @@ void Game::play() {
                     std::cout << "Repair: " << item->getName()
                               << "  " << item->getDurability() << " -> " << repairTarget << "/100"
                               << "\nPrice: " << repairCost << " coins\n";
-                    std::cout << "[R] confrim\n";
+                    if (player->getMoney() >= repairCost)
+                        std::cout << "[R] confirm\n";
+                    else
+                        std::cout << Color::RED << "Not enough coins! ("
+                                  << player->getMoney() << "/" << repairCost << ")" << Color::RESET << "\n";
                 } else {
-
                     repairPending = false;
                 }
             }
@@ -512,35 +642,41 @@ void Game::play() {
                     std::cout << "UPGRADE: " << item->getName()
                               << "  " << upgradeFrom << " -> " << upgradeTo
                               << "\nPrice: " << upgradeCost << " coins\n";
-                    std::cout << "[P] confirm\n";
+                    if (player->getMoney() >= upgradeCost)
+                        std::cout << "[P] confirm\n";
+                    else
+                        std::cout << Color::RED << "Not enough coins! ("
+                                  << player->getMoney() << "/" << upgradeCost << ")" << Color::RESET << "\n";
                 } else {
                     upgradePending = false;
                 }
             }
 
-            std::cout << "\n";
-            if (equipMode){
-                std::cout << "[TAB] inventory  [A/D or arrow keys] move  [E] unequip  [I] toggle info\n";
+            if (!medkitMsg.empty()) {
+                std::cout << "~~~~~~~~~~~~~~~~~~~\n";
+                std::cout << medkitMsg << "\n";
             }
-            else{
-                if(player->getInv()->getItemOnSelectedRC(
-                        player->getInv()->getCurrentRow(),
-                        player->getInv()->getCurrentCol())->getCategory() == "medkit"){
-                std::cout << "[TAB] inventory  [A/D or arrow keys] move [U] use\n";
-                }
-                else{
-                std::cout << "[TAB] equipment  [WASD or arrow keys] move  [E] equip  [I] toggle info  [P] upgrade  [R] repair\n";
+
+            std::cout << "\n";
+            if (equipMode) {
+                std::cout << "[TAB] inventory  [A/D] move  [E] unequip  [I] toggle info\n";
+            } else {
+                auto hintItem = player->getInv()->getItemOnSelectedRC(
+                    player->getInv()->getCurrentRow(),
+                    player->getInv()->getCurrentCol());
+                if (hintItem && hintItem->getCategory() == "medkit") {
+                    std::cout << "[TAB] equipment  [WASD] move  [I] toggle info  [U] use\n";
+                } else {
+                    std::cout << "[TAB] equipment  [WASD] move  [E] equip  [I] toggle info  [P] upgrade  [R] repair\n";
                 }
             }
 
             userInput = int(getSingleChar());
 
-
             if (!equipMode) {
                 secretCode += char(userInput);
                 if (secretCode.length() > 20)
                     secretCode = secretCode.substr(1);
-
 
                 if (secretCode.find("111") != std::string::npos && !used) {
                     if (auto item = player->getInv()->getItemOnSelectedRC(
@@ -560,15 +696,13 @@ void Game::play() {
                     secretCode = "";
                 }
 
-
                 if (secretCode.find("222") != std::string::npos && !used2) {
                     if (auto item = player->getInv()->getItemOnSelectedRC(
                             player->getInv()->getCurrentRow(),
                             player->getInv()->getCurrentCol())) {
-                        if(item->getRarity() == common || item->getRarity() == uncommon || item->getRarity() == rare) {
+                        if (item->getRarity() == common || item->getRarity() == uncommon || item->getRarity() == rare) {
                             secretCode = "";
-                        }
-                        else{
+                        } else {
                             item->setRarity(unknown);
                             secretCode = "";
                             used2 = true;
@@ -580,7 +714,6 @@ void Game::play() {
                 } else if (secretCode.find("222") != std::string::npos && used2) {
                     secretCode = "";
                 }
-
 
                 if (secretCode.find("999") != std::string::npos && !used3) {
                     player->setMoney(player->getMoney() + 500);
@@ -596,35 +729,44 @@ void Game::play() {
 
             switch (userInput) {
 
-
             case '\t':
-                repairPending = false;
+                repairPending  = false;
+                upgradePending = false;
+                medkitMsg      = "";
                 equipMode = !equipMode;
                 break;
 
-
             case 'a':
-                repairPending = false;
+                repairPending  = false;
+                upgradePending = false;
+                medkitMsg      = "";
                 if (equipMode) player->getEquip()->moveCursor(-1);
                 else           player->getInv()->setCurrentCol(player->getInv()->getCurrentCol() - 1);
                 break;
             case 'd':
-                repairPending = false;
+                repairPending  = false;
+                upgradePending = false;
+                medkitMsg      = "";
                 if (equipMode) player->getEquip()->moveCursor(+1);
                 else           player->getInv()->setCurrentCol(player->getInv()->getCurrentCol() + 1);
                 break;
             case 'w':
-                repairPending = false;
+                repairPending  = false;
+                upgradePending = false;
+                medkitMsg      = "";
                 if (!equipMode) player->getInv()->setCurrentRow(player->getInv()->getCurrentRow() - 1);
                 break;
             case 's':
-                repairPending = false;
+                repairPending  = false;
+                upgradePending = false;
+                medkitMsg      = "";
                 if (!equipMode) player->getInv()->setCurrentRow(player->getInv()->getCurrentRow() + 1);
                 break;
 
-
             case 'e': case 'E':
-                repairPending = false;
+                repairPending  = false;
+                upgradePending = false;
+                medkitMsg      = "";
                 if (equipMode) {
                     int s = player->getEquip()->getCursorSlot();
                     Item* slotItem = nullptr;
@@ -647,21 +789,22 @@ void Game::play() {
                 }
                 break;
 
-
             case 'i':
-                repairPending = false;
+                repairPending  = false;
+                upgradePending = false;
+                medkitMsg      = "";
                 showInfo = !showInfo;
                 break;
 
-
             case 'p':
                 repairPending = false;
+                medkitMsg     = "";
                 if (!equipMode) {
                     if (upgradePending) {
-                        if (auto item = player->getInv()->getItemOnSelectedRC(
-                                player->getInv()->getCurrentRow(),
-                                player->getInv()->getCurrentCol())) {
-                            if (player->getMoney() >= upgradeCost) {
+                        if (player->getMoney() >= upgradeCost) {
+                            if (auto item = player->getInv()->getItemOnSelectedRC(
+                                    player->getInv()->getCurrentRow(),
+                                    player->getInv()->getCurrentCol())) {
                                 player->setMoney(player->getMoney() - upgradeCost);
                                 item->upgradeType();
                             }
@@ -679,9 +822,7 @@ void Game::play() {
                             else if (type == "Iron")   { price = 120; to = "Gold";    }
                             else if (type == "Gold")   { price = 280; to = "Diamond"; }
 
-                            if (price == 0) {
-                            } else if (player->getMoney() < price) {
-                            } else {
+                            if (price > 0) {
                                 upgradeCost    = price;
                                 upgradeFrom    = type;
                                 upgradeTo      = to;
@@ -694,95 +835,88 @@ void Game::play() {
                 }
                 break;
 
-
             case 'r':
+                upgradePending = false;
+                medkitMsg      = "";
                 if (!equipMode) {
                     if (repairPending) {
-
-                        if (auto item = player->getInv()->getItemOnSelectedRC(
-                                player->getInv()->getCurrentRow(),
-                                player->getInv()->getCurrentCol())) {
-                            if (player->getMoney() >= repairCost) {
+                        if (player->getMoney() >= repairCost) {
+                            if (auto item = player->getInv()->getItemOnSelectedRC(
+                                    player->getInv()->getCurrentRow(),
+                                    player->getInv()->getCurrentCol())) {
                                 player->setMoney(player->getMoney() - repairCost);
                                 item->setDurability(repairTarget);
                             }
                         }
                         repairPending = false;
                     } else {
-
                         if (auto item = player->getInv()->getItemOnSelectedRC(
                                 player->getInv()->getCurrentRow(),
                                 player->getInv()->getCurrentCol())) {
-
                             if (item->getDurability() < 100) {
-
                                 int repairBase = 0;
                                 switch (item->getType()) {
-                                case wooden:  repairBase = 10;   break;
-                                case stone:   repairBase = 25;   break;
-                                case iron:    repairBase = 60;   break;
-                                case gold:    repairBase = 150;  break;
-                                case diamond: repairBase = 300;  break;
+                                case wooden:  repairBase = 10;  break;
+                                case stone:   repairBase = 25;  break;
+                                case iron:    repairBase = 60;  break;
+                                case gold:    repairBase = 150; break;
+                                case diamond: repairBase = 300; break;
                                 case unseen:  repairBase = 600; break;
-                                default:      repairBase = 10;   break;
+                                default:      repairBase = 10;  break;
                                 }
 
-                                int missing   = 100 - item->getDurability();
-                                int fullCost  = std::max(1, int(repairBase * missing / 100.0f));
+                                int missing  = 100 - item->getDurability();
+                                int fullCost = std::max(1, int(repairBase * missing / 100.0f));
 
-                                if (player->getMoney() <= 0) {
-
-                                    break;
-                                } else if (player->getMoney() >= fullCost) {
-
+                                if (player->getMoney() >= fullCost) {
                                     repairCost   = fullCost;
                                     repairTarget = 100;
-                                } else {
-
+                                } else if (player->getMoney() > 0) {
                                     float ratio  = float(player->getMoney()) / float(fullCost);
                                     int canFix   = std::max(1, int(missing * ratio));
                                     repairTarget = item->getDurability() + canFix;
                                     repairCost   = player->getMoney();
+                                } else {
+                                    break;
                                 }
                                 repairPending = true;
                             }
                         }
                     }
                 } else {
-
                     repairPending = false;
                 }
                 break;
 
-            // case 'u' :
-                // repairPending = false;
-                // if(player->getInv()->getItemOnSelectedRC(
-                //         player->getInv()->getCurrentRow(),
-                //         player->getInv()->getCurrentCol())->getCategory() == "medkit"){
-                //     if(player->getInv()->getItemOnSelectedRC(
-                //         player->getInv()->getCurrentRow(),
-                //         player->getInv()->getCurrentCol())->getName() == "Small First-Aid kit")
-                //     {
-                //         player->setHp(std::min(player->getHp() + 20, 100));
-                //         std::cout << "Sucessfully healed for 20 HP" << "\n";
-                //     }
-                //     else if(player->getInv()->getItemOnSelectedRC(
-                //             player->getInv()->getCurrentRow(),
-                //             player->getInv()->getCurrentCol())->getName() == "Medium First-Aid kit")
-                //     {
-                //         player->setHp(std::min(player->getHp() + 50, 100));
-                //         std::cout << "Sucessfully healed for 50 HP" << "\n";
-                //     }
-                //     else{
-                //         player->setHp(100);
-                //         std::cout << "Successfully healed to full HP!";
-                //     }
-                // }
-                // else{
-                //     std::cout << "You can use only first-aid kit!" << "\n";
-                // }
-                // break;
+            case 'u':
+                repairPending  = false;
+                upgradePending = false;
+                medkitMsg      = "";
+                if (!equipMode) {
+                    if (auto item = player->getInv()->getItemOnSelectedRC(
+                            player->getInv()->getCurrentRow(),
+                            player->getInv()->getCurrentCol())) {
+                        if (item->getCategory() == "medkit") {
+                            if (player->getHp() == 100) {
+                                medkitMsg = Color::YELLOW + "Already at full HP!" + Color::RESET;
+                            } else {
+                                int healAmount = 0;
+                                if      (item->getName() == "Small First-Aid kit")  healAmount = 40;
+                                else if (item->getName() == "Medium First-Aid kit") healAmount = 60;
+                                else                                                 healAmount = 100 - player->getHp();
 
+                                player->setHp(std::min(player->getHp() + healAmount, 100));
+                                player->getInv()->removeItem(
+                                    player->getInv()->getCurrentRow(),
+                                    player->getInv()->getCurrentCol()
+                                    );
+                                medkitMsg = Color::GREEN + "Healed! HP: "
+                                            + std::to_string(player->getHp()) + "/100" + Color::RESET;
+                            }
+                        }
+                    }
+                }
+                break;
 
             case KEY_BACK:
                 state          = STATE_MENU;
@@ -790,12 +924,14 @@ void Game::play() {
                 equipMode      = false;
                 repairPending  = false;
                 upgradePending = false;
+                medkitMsg      = "";
                 secretCode     = "";
                 break;
 
-
             default:
-                repairPending = false;
+                repairPending  = false;
+                upgradePending = false;
+                medkitMsg      = "";
                 break;
             }
         }
@@ -878,13 +1014,9 @@ void Game::play() {
             std::cout << "<===== Sell =====>\n\n";
             std::cout << "Balance: " << player->getMoney() << "\n\n";
 
-            // --- zbierz wszystkie itemy (inventory + equipment) do listy ---
-            // kazdy wpis: wskaznik na item + czy jest wyposazone
             struct SellEntry {
                 Item* item;
                 bool  equipped;
-                // skad pochodzi (zeby wiedziec jak usunac)
-                // 0=inventory row/col, 1=armor, 2=ranged, 3=melee
                 int   source;
                 int   invRow;
                 int   invCol;
@@ -892,22 +1024,16 @@ void Game::play() {
 
             std::vector<SellEntry> sellList;
 
-            // inventory
             for (int i = 0; i < player->getInv()->getRows(); i++) {
                 for (int j = 0; j < player->getInv()->getCols(); j++) {
                     Item* it = player->getInv()->getItems()[i][j];
-                    if (it) {
-                        sellList.push_back({it, false, 0, i, j});
-                    }
+                    if (it) sellList.push_back({it, false, 0, i, j});
                 }
             }
-            // equipment — armor
             if (player->getEquip()->getArmor())
                 sellList.push_back({player->getEquip()->getArmor(),  true, 1, -1, -1});
-            // equipment — ranged
             if (player->getEquip()->getRanged())
                 sellList.push_back({player->getEquip()->getRanged(), true, 2, -1, -1});
-            // equipment — melee
             if (player->getEquip()->getMelee())
                 sellList.push_back({player->getEquip()->getMelee(),  true, 3, -1, -1});
 
@@ -922,11 +1048,9 @@ void Game::play() {
                 continue;
             }
 
-            // ogranicz kursor do rozmiaru listy
             if (sellCursor >= int(sellList.size())) sellCursor = int(sellList.size()) - 1;
             if (sellCursor < 0) sellCursor = 0;
 
-            // --- wyswietl grid: max 4 kolumny, tyle wierszy ile trzeba ---
             const int SELL_COLS = 4;
             int totalItems = int(sellList.size());
             int rows = (totalItems + SELL_COLS - 1) / SELL_COLS;
@@ -934,22 +1058,16 @@ void Game::play() {
             for (int i = 0; i < rows; i++) {
                 for (int j = 0; j < SELL_COLS; j++) {
                     int idx = i * SELL_COLS + j;
-                    if (idx >= totalItems) {
-                        std::cout << "     "; // puste miejsce dla wyrownania
-                        continue;
-                    }
-
+                    if (idx >= totalItems) { std::cout << "     "; continue; }
                     bool selected = (idx == sellCursor);
                     Item* it = sellList[idx].item;
                     char  ch = char(std::toupper(it->getName()[0]));
-
                     if (selected) std::cout << ">[" << ch << "]<";
                     else          std::cout << " [" << ch << "] ";
                 }
                 std::cout << "\n";
             }
 
-            // --- info o wybranym itemie ---
             std::cout << "~~~~~~~~~~~~~~~~~~~\n";
             Item* sel = sellList[sellCursor].item;
             sel->showInfo();
@@ -957,6 +1075,8 @@ void Game::play() {
 
             if (sellPending) {
                 std::cout << "[S] confirm\n";
+            } else {
+                std::cout << "[A/D] move  [S] sell  [BACKSPACE] back\n";
             }
 
             userInput = int(getSingleChar());
@@ -973,33 +1093,24 @@ void Game::play() {
                 break;
             case 's':
                 if (sellPending) {
-                    // drugie S — zatwierdz sprzedaz
                     SellEntry& entry = sellList[sellCursor];
-
-                    // jesli wyposazone — najpierw odposaź (bez zwracania do inventory)
                     if (entry.equipped) {
                         int prevCursor = player->getEquip()->getCursorSlot();
-                        int targetSlot = entry.source; // 1=armor->0, 2=ranged->1, 3=melee->2
-                        int equipSlot  = targetSlot - 1; // przelicz: source 1->slot 0, 2->1, 3->2
+                        int equipSlot  = entry.source - 1;
                         while (player->getEquip()->getCursorSlot() != equipSlot)
                             player->getEquip()->moveCursor(1);
                         Item* unequipped = player->getEquip()->unequipSelected();
-                        // nie oddawaj do inventory — zaraz usuwamy
                         while (player->getEquip()->getCursorSlot() != prevCursor)
                             player->getEquip()->moveCursor(1);
-                        // unequipped == entry.item, usuwamy przez delete ponizej
                         player->setMoney(player->getMoney() + sellPrice);
                         delete unequipped;
                     } else {
-                        // z inventory — removeItem robi delete
                         player->setMoney(player->getMoney() + sellPrice);
                         player->getInv()->removeItem(entry.invRow, entry.invCol);
                     }
-
                     sellPending = false;
-                    sellCursor  = 0; // resetuj kursor po sprzedazy
+                    sellCursor  = 0;
                 } else {
-                    // pierwsze S — oblicz cene
                     sellPrice   = calculateSellPrice(sellList[sellCursor].item);
                     sellPending = true;
                 }
@@ -1015,7 +1126,8 @@ void Game::play() {
             }
         }
 
-        else if( state == STATE_MAP){
+        // ===================== MAP =====================
+        else if (state == STATE_MAP) {
             std::cout << "<================ Map ================>\n\n";
             std::cout << " _______________________________________\n";
             std::cout << "|     ''                                |\n";
@@ -1037,47 +1149,47 @@ void Game::play() {
             std::cout << "‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\n";
 
             userInput = int(getSingleChar());
-            switch(userInput){
-            case KEY_BACK:
-                state = STATE_MENU;
-                break;
+            switch (userInput) {
+            case KEY_BACK: state = STATE_MENU; break;
             }
         }
-        else if(state == STATE_NAVIGATION) {
+
+        // ===================== GUIDE =====================
+        else if (state == STATE_NAVIGATION) {
             std::cout << "For better user experience, please run this game in bigger screen view (so that everything fits in one screen, no scrolling needed)\n\n";
             std::cout << "<===== Navigation guide =====>\n\n";
             std::cout << "Movement:\n W, S, A, D or arrow keys\n~~~~~~~~~~~~~\n";
-            std::cout << "Inventory functions:\ntab- change select \n i - toggle info\n p - weapon upgrade\n r - repair item\n e - equip/unequip item";
-            std::cout << "Store functions:\n p - toggle price\n b - buy\n s - sell\n\n\n";
+            std::cout << "Inventory functions:\n tab - change select\n i   - toggle info\n p   - weapon upgrade\n r   - repair item\n e   - equip/unequip item\n u   - use medkit\n~~~~~~~~~~~~~\n";
+            std::cout << "Store functions:\n p - toggle price\n b - buy\n s - sell\n\n";
             std::cout << "<===== Upgrade prices =====>\n\n";
-            std::cout << " Wooden -> stone - 20\n";
-            std::cout << " Stone -> iron   - 50\n";
-            std::cout << " Iron -> gold    - 120\n";
-            std::cout << " Gold -> Diamond - 280\n\n";
-            std::cout << "\n<===== Repair prices =====>\n\n";
-            std::cout << "Price for full repair (1-100)\n Wooden  - 10\n Stone   - 25\n Iron   - 60\n Gold    - 150\n Diamond - 300\n Unseen  - 600\n";
-            std::cout << "\n\n<===== Item rarity chances =====>\n\n";
+            std::cout << " Wooden -> Stone   - 20\n";
+            std::cout << " Stone  -> Iron    - 50\n";
+            std::cout << " Iron   -> Gold    - 120\n";
+            std::cout << " Gold   -> Diamond - 280\n\n";
+            std::cout << "<===== Repair prices =====>\n\n";
+            std::cout << " Price for full repair (1-100)\n";
+            std::cout << " Wooden  - 10\n";
+            std::cout << " Stone   - 25\n";
+            std::cout << " Iron    - 60\n";
+            std::cout << " Gold    - 150\n";
+            std::cout << " Diamond - 300\n";
+            std::cout << " Unseen  - 600\n\n";
+            std::cout << "<===== Item rarity chances =====>\n\n";
             std::cout << " Common    - 50%\n";
             std::cout << " Uncommon  - 28%\n";
             std::cout << " Rare      - 14%\n";
             std::cout << " Epic      -  6%\n";
             std::cout << " Legendary -  2%\n\n";
+
             userInput = int(getSingleChar());
-            switch(userInput){
+            switch (userInput) {
             case KEY_BACK: state = STATE_MENU; break;
             }
         }
     }
 }
 
-
-    // enter : 10
-    // backspace : 8
-    // del : 127 (macos's backspace)
-    // w : 119
-    // a : 97
-    // s : 115
-    // d : 100
-    // i : 105
-    // u : 117
-
+// enter : 10
+// backspace : 8
+// del : 127 (macos's backspace)
+// w : 119  a : 97  s : 115  d : 100  i : 105  u : 117  h : 104

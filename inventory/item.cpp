@@ -156,7 +156,7 @@ void Item::showInfo()
     }
     else {
         std::cout << "Item - " << medkitColor(this->name) << this->name << Color::RESET
-                  << "(heals " << (this->name == "Small First-Aid kit" ? "for 20 HP" : this->name == "Medium First-Aid kit" ? "for 50 HP" : "to full HP") << ")" << "\n";
+                  << " (heals " << (this->name == "Small First-Aid kit" ? " 40 HP" : this->name == "Medium First-Aid kit" ? " 60 HP" : "to full HP") << ")" << "\n";
         std::cout << "Price - " << this->price << "\n";
     }
 }
