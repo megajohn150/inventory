@@ -12,6 +12,7 @@ enum GameState {
     STATE_NAVIGATION,
     STATE_STORE_SHOP,
     STATE_STORE_SELL,
+    STATE_PLAY_MEDKIT,
     STATE_PLAY
 };
 
