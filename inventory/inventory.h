@@ -11,6 +11,8 @@ public:
     void display(Equipment* eq = nullptr, bool equipMode = false);
 
     void display() override { display(nullptr, false); }
+
+    void clearInv(Equipment* eq);
 };
 
 #endif // INVENTORY_H

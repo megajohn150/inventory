@@ -36,3 +36,15 @@ void Inventory::display(Equipment* eq, bool equipMode)
         std::cout << "        [ | ]\n";
     }
 }
+
+void Inventory::clearInv(Equipment* eq)
+{
+    for(int i = 0; i < rows; i++){
+        for(int j = 0; j < cols; j++){
+            removeItem(i,j);
+        }
+    }
+    if(eq){
+        eq->clear();
+    }
+}
