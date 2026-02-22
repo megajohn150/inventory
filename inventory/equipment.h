@@ -22,6 +22,8 @@ public:
 
     void moveCursor(int dir);
 
+    void clear();
+
     int   getCursorSlot() const { return cursorSlot; }
     Item* getArmor()      const { return armor; }
     Item* getMelee()      const { return melee; }

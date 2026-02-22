@@ -9,6 +9,7 @@ class Player
 private:
     std::string name;
     int money;
+    int hp;
     Inventory* inv;
     Equipment* equip;
 
@@ -27,6 +28,8 @@ public:
     std::string getName() const;
     int        getMoney() const;
     void       setMoney(int newMoney);
+    int        getHp() const;
+    void       setHp(int newHp);
     void       setInv(Inventory* newInv);
     Inventory* getInv()   const;
     Equipment* getEquip() const;

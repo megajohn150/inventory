@@ -55,6 +55,13 @@ void Equipment::moveCursor(int dir)
     if (cursorSlot > 2) cursorSlot = 0;
 }
 
+void Equipment::clear()
+{
+    delete armor;  armor  = nullptr;
+    delete melee;  melee  = nullptr;
+    delete ranged; ranged = nullptr;
+}
+
 void Equipment::display(bool active) const
 {
     auto ch = [](Item* item) -> char {
@@ -87,4 +94,6 @@ void Equipment::display(bool active) const
     std::cout << "     " << leftHand << "[" << a << a << a << "]" << rightHand << "\n";
     std::cout << "        [" << a << "|" << a << "]\n";
     std::cout << "        [" << a << "|" << a << "]\n";
+
+
 }

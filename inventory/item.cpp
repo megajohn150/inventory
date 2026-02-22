@@ -32,6 +32,12 @@ static std::string durabilityColor(int dur) {
     return Color::MAGENTA;
 }
 
+static std::string medkitColor(std::string name){
+    if(name == "Small First-Aid kit") return Color::GREEN;
+    if(name == "Medium First-Aid kit") return Color::YELLOW;
+    return Color::RED;
+}
+
 std::string Item::getName() const
 {
     return name;
@@ -142,10 +148,17 @@ void Item::use()
 
 void Item::showInfo()
 {
+    if(category != "medkit"){
     std::cout << "Item - " << Item::getTypeString() << " " <<this->name << " (" << rarityColor(Item::getRarity()) << Item::getRarityString()<<Color::RESET<<")" << "\n";
     std::cout << "Price - " << this->price << "\n";
     std::cout << "Durability - " << durabilityColor(this->durability)
               << this->durability << Color::RESET<< "/100"  << "\n";
+    }
+    else {
+        std::cout << "Item - " << medkitColor(this->name) << this->name << Color::RESET
+                  << "(heals " << (this->name == "Small First-Aid kit" ? "for 20 HP" : this->name == "Medium First-Aid kit" ? "for 50 HP" : "to full HP") << ")" << "\n";
+        std::cout << "Price - " << this->price << "\n";
+    }
 }
 
 std::string Item::getRarityString()
