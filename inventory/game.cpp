@@ -43,6 +43,11 @@ static std::string durabilityColor(int dur) {
     if (dur > 0) return Color::RED;
     return Color::MAGENTA;
 }
+static std::string hpColor(int hp){
+    if(hp > 60) return Color::GREEN;
+    if(hp > 30) return Color::YELLOW;
+    return Color::RED;
+}
 Game::Game() {
     this->player = new Player();
     this->menu   = new Menu();
@@ -73,6 +78,12 @@ Game::Game() {
     // armor
     shop->addItem(new Item("Used armor", 20,  "armor"));
     shop->addItem(new Item("Armor",  50,  "armor"));
+
+    //First-Aid kits
+    shop->addItem(new Item("Small First-Aid kit", 20, "medkit"));
+    shop->addItem(new Item("Medium First-Aid kit", 50, "medkit"));
+    shop->addItem(new Item("Big First-Aid kit", 100, "medkit"));
+
 }
 
 Game::~Game() {
@@ -179,6 +190,14 @@ static int zombieSteal(Item* weapon, Item* armor) {
     }
 
     return std::max(base, 0);
+}
+
+static int hpReducing(Item* armor){
+    int base = 0;
+    if(armor == nullptr){
+        base += Random::range(10, 40);
+    }
+    return base;
 }
 
 static int calculateSellPrice(Item* item) {
@@ -303,7 +322,7 @@ void Game::play() {
                 std::cout << "Active weapon: none\n";
             }
 
-            std::cout << "Balance: " << player->getMoney() << "\n\n";
+            std::cout << "Balance: " << player->getMoney() << " | Health points: " << hpColor(player->getHp()) <<player->getHp() << Color::RESET << "\n\n";
             std::cout << "Click to fight!!\n";
 
             if (!lastEvent.empty())
@@ -315,6 +334,12 @@ void Game::play() {
                 state       = STATE_MENU;
                 // earnedMoney = 0;
                 lastEvent   = "";
+                continue;
+            }
+
+
+            if(player->getHp() == 0){
+                lastEvent = "You died, restart the game to play";
                 continue;
             }
 
@@ -362,9 +387,13 @@ void Game::play() {
                 stolen = std::min(stolen, player->getMoney());
                 player->setMoney(player->getMoney() - stolen);
 
-                // armor zawsze sie zuzywa przy ataku zombie (niezaleznie od stolen)
                 Item* armorItem = player->getEquip()->getArmor();
                 bool armorBroke = false;
+
+                int reducedHp = hpReducing(armorItem);
+                reducedHp = std::min(reducedHp, player->getHp());
+                player->setHp(player->getHp() - reducedHp);
+
                 if (armorItem) {
                     armorItem->use();
 
@@ -378,6 +407,7 @@ void Game::play() {
                             player->getEquip()->moveCursor(1);
                         armorBroke = true;
                         armorItem  = nullptr;
+
                     }
                 }
 
@@ -390,6 +420,7 @@ void Game::play() {
                     if (armorBroke) {
                         lastEvent = ">> Zombie attacked! You lost " + std::to_string(stolen)
                         + " coins and your armor broke!";
+
                     } else if (armorItem) {
                         lastEvent = ">> Zombie attacked! You lost " + std::to_string(stolen)
                         + " coins. Armor: " + std::to_string(armorItem->getDurability()) + "/100";
@@ -400,6 +431,15 @@ void Game::play() {
             } else {
                 lastEvent = ">> You earned +" + std::to_string(earned) + " coins!";
                 player->setMoney(player->getMoney() + earned);
+            }
+
+            if(player->getHp() <= 0){
+                lastEvent = "You died!";
+                player->setMoney(0);
+                player->unequipToInventory();
+                Inventory* inv = player->getInv();
+                inv->clearInv(player->getEquip());
+                continue;
             }
         }
 
@@ -479,10 +519,19 @@ void Game::play() {
             }
 
             std::cout << "\n";
-            if (equipMode)
+            if (equipMode){
                 std::cout << "[TAB] inventory  [A/D or arrow keys] move  [E] unequip  [I] toggle info\n";
-            else
+            }
+            else{
+                if(player->getInv()->getItemOnSelectedRC(
+                        player->getInv()->getCurrentRow(),
+                        player->getInv()->getCurrentCol())->getCategory() == "medkit"){
+                std::cout << "[TAB] inventory  [A/D or arrow keys] move [U] use\n";
+                }
+                else{
                 std::cout << "[TAB] equipment  [WASD or arrow keys] move  [E] equip  [I] toggle info  [P] upgrade  [R] repair\n";
+                }
+            }
 
             userInput = int(getSingleChar());
 
@@ -704,6 +753,35 @@ void Game::play() {
                     repairPending = false;
                 }
                 break;
+
+            // case 'u' :
+                // repairPending = false;
+                // if(player->getInv()->getItemOnSelectedRC(
+                //         player->getInv()->getCurrentRow(),
+                //         player->getInv()->getCurrentCol())->getCategory() == "medkit"){
+                //     if(player->getInv()->getItemOnSelectedRC(
+                //         player->getInv()->getCurrentRow(),
+                //         player->getInv()->getCurrentCol())->getName() == "Small First-Aid kit")
+                //     {
+                //         player->setHp(std::min(player->getHp() + 20, 100));
+                //         std::cout << "Sucessfully healed for 20 HP" << "\n";
+                //     }
+                //     else if(player->getInv()->getItemOnSelectedRC(
+                //             player->getInv()->getCurrentRow(),
+                //             player->getInv()->getCurrentCol())->getName() == "Medium First-Aid kit")
+                //     {
+                //         player->setHp(std::min(player->getHp() + 50, 100));
+                //         std::cout << "Sucessfully healed for 50 HP" << "\n";
+                //     }
+                //     else{
+                //         player->setHp(100);
+                //         std::cout << "Successfully healed to full HP!";
+                //     }
+                // }
+                // else{
+                //     std::cout << "You can use only first-aid kit!" << "\n";
+                // }
+                // break;
 
 
             case KEY_BACK:
