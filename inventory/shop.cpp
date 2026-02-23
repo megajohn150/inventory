@@ -1,6 +1,6 @@
 #include "shop.h"
 
-Shop::Shop() : GridBase(13, 1) {}
+Shop::Shop() : GridBase(15, 1) {}
 
 void Shop::display()
 {
@@ -45,6 +45,18 @@ void Shop::display()
     std::cout << "~~~~~~~~~~~~~\nFirst aid kits:\n";
     for (int i = 0; i < rows; i++){
         if (items[i][0] && items[i][0]->getCategory() == "medkit"){
+            if (i == currentRow){
+                std::cout << " > ";
+            }
+            else{
+                std::cout << " ";
+            }
+            std::cout << items[i][0]->getName() << "\n";
+        }
+    }
+    std::cout << "~~~~~~~~~~~~~\nBackpacks:\n";
+    for (int i = 0; i < rows; i++){
+        if (items[i][0] && items[i][0]->getCategory() == "backpack"){
             if (i == currentRow){
                 std::cout << " > ";
             }

@@ -19,6 +19,7 @@ add_executable(inventory main.cpp
     equipment.h equipment.cpp
 
 
+
 )
 
 include(GNUInstallDirs)
