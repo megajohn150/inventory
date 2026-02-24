@@ -131,7 +131,7 @@ Game::Game() {
     store->addItem(new Item("Buy",  1, "game"));
     store->addItem(new Item("Sell", 1, "game"));
 
-    shop->addItem(new Item("SSword",   15, "close range weapons"));
+    shop->addItem(new Item("Sword",   15, "close range weapons"));
     shop->addItem(new Item("Katana",  35, "close range weapons"));
     shop->addItem(new Item("Hammer",  30, "close range weapons"));
     shop->addItem(new Item("Spear",   25, "close range weapons"));
@@ -512,7 +512,7 @@ void Game::play() {
                                          ));
 
             int roll = Random::range(1, 100);
-            if (roll <= 2) {
+            if (roll <= 3) {
                 // BOSS
                 /*bossActive = true;*/
                 bossClicks    = 0;
@@ -520,7 +520,7 @@ void Game::play() {
                 state = STATE_BOSS;
                 continue;
             }
-            if (roll <= 27) {
+            else if (roll <= 25) {
                 Item* weaponNow = pickActiveWeapon(
                     player->getEquip()->getMelee(),
                     player->getEquip()->getRanged()
