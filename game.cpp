@@ -797,7 +797,14 @@ void Game::play() {
                 std::cout << "Continuing in " << (3 - int(cooldownElapsed)) << "...\n";
 
                 std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
+                while (kbhit()) {
+                    getchar();
+                }
             } else {
+                while (kbhit()) {
+                    getchar();
+                }
                 bossClicks = 0;
                 state = STATE_PLAY;
             }
