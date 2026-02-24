@@ -77,11 +77,18 @@ Player can buy, sell, upgrade, and repair items while earning money through game
 ```
 .../project_folder
 ```
-2. Compile:
+2. Create and enter build folder:
 ```
-g++ -std=c++17 -Wall *.cpp -o inventory
+mkdir build && cd build
 ```
-3. Run:
+3. Compile:
+```
+cmake ..
+```
+```
+make
+```
+4. Run:
 ```
 ./inventory
 ```
