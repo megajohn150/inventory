@@ -131,7 +131,7 @@ Game::Game() {
     store->addItem(new Item("Buy",  1, "game"));
     store->addItem(new Item("Sell", 1, "game"));
 
-    shop->addItem(new Item("Sword",   15, "close range weapons"));
+    shop->addItem(new Item("SSword",   15, "close range weapons"));
     shop->addItem(new Item("Katana",  35, "close range weapons"));
     shop->addItem(new Item("Hammer",  30, "close range weapons"));
     shop->addItem(new Item("Spear",   25, "close range weapons"));
