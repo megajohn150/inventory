@@ -17,7 +17,7 @@ public:
     ~Equipment();
 
     Item* equipItem(Item* newItem);
-
+    Item* getSelectedItem();
     Item* unequipSelected();
 
     void moveCursor(int dir);

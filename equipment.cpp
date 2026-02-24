@@ -12,6 +12,14 @@ Equipment::~Equipment()
     delete melee;
     delete ranged;
 }
+Item* Equipment::getSelectedItem(){
+    switch(getCursorSlot()){
+    case 0: return armor;
+    case 1: return ranged;
+    case 2: return melee;
+    default: return nullptr;
+    }
+}
 
 Item* Equipment::equipItem(Item* newItem)
 {

@@ -856,12 +856,19 @@ void Game::play() {
             }
 
             if (repairPending) {
-                if (auto item = player->getInv()->getItemOnSelectedRC(
+                Item* item = nullptr;
+                if(!equipMode){
+                    item = player->getInv()->getItemOnSelectedRC(
                         player->getInv()->getCurrentRow(),
-                        player->getInv()->getCurrentCol())) {
+                        player->getInv()->getCurrentCol());
+                }
+                else if(equipMode){
+                    item = player->getEquip()->getSelectedItem();
+                }
+                if (item) {
                     std::cout << "~~~~~~~~~~~~~~~~~~~\n";
                     std::cout << "Repair: " << item->getName()
-                              << "  " << item->getDurability() << " -> " << repairTarget << "/100"
+                              << "  " << item->getDurability() << "/100 -> " << repairTarget << "/100"
                               << "\nPrice: " << repairCost << " coins\n";
                     if (player->getMoney() >= repairCost)
                         std::cout << "[R] confirm\n";
@@ -874,9 +881,16 @@ void Game::play() {
             }
 
             if (upgradePending) {
-                if (auto item = player->getInv()->getItemOnSelectedRC(
+                Item* item = nullptr;
+                if(!equipMode){
+                    item = player->getInv()->getItemOnSelectedRC(
                         player->getInv()->getCurrentRow(),
-                        player->getInv()->getCurrentCol())) {
+                        player->getInv()->getCurrentCol());
+                }
+                else if(equipMode){
+                    item = player->getEquip()->getSelectedItem();
+                }
+                if (item) {
                     std::cout << "~~~~~~~~~~~~~~~~~~~\n";
                     std::cout << "UPGRADE: " << item->getName()
                               << "  " << upgradeFrom << " -> " << upgradeTo
@@ -898,7 +912,7 @@ void Game::play() {
 
             std::cout << "\n";
             if (equipMode) {
-                std::cout << "[TAB] inventory  [A/D] move  [E] unequip  [I] info  [V] stats\n";
+                std::cout << "[TAB] inventory  [A/D] move  [E] unequip  [I] info  [P] upgrade  [R] repair  [V] stats\n";
             } else {
                 auto hintItem = player->getInv()->getItemOnSelectedRC(
                     player->getInv()->getCurrentRow(),
@@ -911,6 +925,7 @@ void Game::play() {
             }
 
             userInput = int(getSingleChar());
+
 
             if (!equipMode) {
                 secretCode += char(userInput);
@@ -1050,16 +1065,22 @@ void Game::play() {
                 showStats      = !showStats;
                 break;
 
-            case 'p':
+            case 'p':{
                 repairPending = false;
                 medkitMsg     = "";
                 showStats     = false;
-                if (!equipMode) {
+                Item* item = nullptr;
+                if(!equipMode){
+                    item = player->getInv()->getItemOnSelectedRC(
+                        player->getInv()->getCurrentRow(),
+                        player->getInv()->getCurrentCol());
+                }
+                else if(equipMode){
+                    item = player->getEquip()->getSelectedItem();
+                }
                     if (upgradePending) {
                         if (player->getMoney() >= upgradeCost) {
-                            if (auto item = player->getInv()->getItemOnSelectedRC(
-                                    player->getInv()->getCurrentRow(),
-                                    player->getInv()->getCurrentCol())) {
+                            if (item) {
                                 player->setMoney(player->getMoney() - upgradeCost);
                                 item->upgradeType();
                                 stats.upgrades++;
@@ -1067,9 +1088,7 @@ void Game::play() {
                         }
                         upgradePending = false;
                     } else {
-                        if (auto item = player->getInv()->getItemOnSelectedRC(
-                                player->getInv()->getCurrentRow(),
-                                player->getInv()->getCurrentCol())) {
+                        if (item) {
                             std::string type = item->getTypeString();
                             int price = 0;
                             std::string to = "";
@@ -1086,21 +1105,24 @@ void Game::play() {
                             }
                         }
                     }
-                } else {
-                    upgradePending = false;
-                }
                 break;
-
-            case 'r':
+            }
+            case 'r':{
                 upgradePending = false;
                 medkitMsg      = "";
                 showStats      = false;
-                if (!equipMode) {
+                Item* item = nullptr;
+                if(!equipMode){
+                    item = player->getInv()->getItemOnSelectedRC(
+                        player->getInv()->getCurrentRow(),
+                        player->getInv()->getCurrentCol());
+                }
+                else if(equipMode){
+                    item = player->getEquip()->getSelectedItem();
+                }
                     if (repairPending) {
                         if (player->getMoney() >= repairCost) {
-                            if (auto item = player->getInv()->getItemOnSelectedRC(
-                                    player->getInv()->getCurrentRow(),
-                                    player->getInv()->getCurrentCol())) {
+                            if (item) {
                                 player->setMoney(player->getMoney() - repairCost);
                                 item->setDurability(repairTarget);
                                 stats.repairs++;
@@ -1108,9 +1130,7 @@ void Game::play() {
                         }
                         repairPending = false;
                     } else {
-                        if (auto item = player->getInv()->getItemOnSelectedRC(
-                                player->getInv()->getCurrentRow(),
-                                player->getInv()->getCurrentCol())) {
+                        if (item) {
                             if (item->getDurability() < 100) {
                                 int repairBase = 0;
                                 switch (item->getType()) {
@@ -1141,11 +1161,9 @@ void Game::play() {
                             }
                         }
                     }
-                } else {
-                    repairPending = false;
-                }
-                break;
 
+                break;
+            }
             case 'u':
                 repairPending  = false;
                 upgradePending = false;
@@ -1199,7 +1217,6 @@ void Game::play() {
                 break;
             }
         }
-
         // ===================== STORE =====================
         else if (state == STATE_STORE) {
             std::cout << "<===== Store =====>\n\n";
