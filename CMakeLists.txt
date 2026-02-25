@@ -5,21 +5,18 @@ project(inventory LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_executable(inventory main.cpp
-    item.h item.cpp
-    inventory.h inventory.cpp
-    player.h player.cpp
-    game.h game.cpp
-    charCheck.h
-    random.h random.cpp
-    menu.h menu.cpp
-    shop.h shop.cpp
-    store.h store.cpp
-    gridbase.h gridbase.cpp
-    equipment.h equipment.cpp
-
-
-
+add_executable(inventory src/main.cpp
+    src/item.h src/item.cpp
+    src/inventory.h src/inventory.cpp
+    src/player.h src/player.cpp
+    src/game.h src/game.cpp
+    src/charCheck.h
+    src/random.h src/random.cpp
+    src/menu.h src/menu.cpp
+    src/shop.h src/shop.cpp
+    src/store.h src/store.cpp
+    src/gridbase.h src/gridbase.cpp
+    src/equipment.h src/equipment.cpp
 )
 
 include(GNUInstallDirs)
