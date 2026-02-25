@@ -1,189 +1,224 @@
-# Simple Console Game – (C++)
+<div align="center">
 
-A simple console-based project written in C++.  
-The game focuses on an inventory system, item management, equipment, and an in-game store.
-Player can buy, sell, upgrade, and repair items while earning money through gameplay.
+# ⚔️ Console RPG Inventory System
+### *A C++ console game built around deep item management*
 
----
+![C++](https://img.shields.io/badge/C++-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white)
+![CMake](https://img.shields.io/badge/CMake-064F8C?style=for-the-badge&logo=cmake&logoColor=white)
+![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Windows-lightgrey?style=for-the-badge)
+<br/>
 
-## Features
+> Buy. Sell. Upgrade. Survive. Don't let the zombies take your gold.
 
-### Inventory System
-- Grid / slot based inventory.
-- Store multiple items at once.
-- Item selection using row and column.
-- Item rarity system (Common, Uncommon, Rare, Epic, Legendary, Unknown).
-- Item type system  (Wooden -> Stone -> Iron -> Gold -> Diamond -> Unseen).
-- Item durability / condition that decreases while playing, and that can be restored.
-- Show info for items.
-
-### Equipped Items
-- Separate equipment slots (melee, ranged and armor).
-- Equipped items directly affect gameplay rewards.
-- Ability to equip and unequip items from inventory.
-
-### Shop
-- Buy new items using in-game currency.
-- Random item rarity generation.
-
-### Sell System
-- Sell unwanted items from inventory.
-- Selling price depends on rarity, type and condition.
-
-### Play Mode
-- Main gameplay loop where the player earns money.
-- Rewards depend on:
-  - Armor strength (better armor - less money lost)
-  - Weapon rarity
-  - Item condition
-- Items lose durability after each play session.
-- Chance of zombie attacking resulting in losing money.
-
-### Upgrading Items
-- Increase type by one.
-- Costs in-game currency.
-
-### Repair System
-- Restore item durability after it has been worn down.
-- Repair cost depends on type and damage level.
-
-### Secret Codes / Extras
-- Hidden commands/cheat codes.
-- One-time used.
-
-### Navigation guide and map
-- Non-functional map.
-- Full navigation guide.
-
-## Project Structure
-  - main.cpp
-  - item.h item.cpp
-  - inventory.h inventory.cpp
-  - player.h player.cpp
-  - game.h game.cpp
-  - charCheck.h
-  - random.h random.cpp
-  - menu.h menu.cpp
-  - shop.h shop.cpp
-  - store.h store.cpp
-  - gridbase.h gridbase.cpp
-  - equipment.h equipment.cpp
-
+</div>
 
 ---
 
-## How to Run (macos)
-1. Go to project location in terminal using cd:
+## 🗺️ Overview
+
+A console-based RPG project written in **C++**, focused on a rich inventory and item management system. Equip weapons, manage durability, run the shop, and earn money — all from your terminal.
+
+---
+
+## ✨ Features
+
+<details>
+<summary><b>🎒 Inventory System</b></summary>
+<br/>
+
+- Grid/slot-based inventory with row & column item selection
+- Store and manage multiple items simultaneously
+- **Rarity tiers:** `Common` → `Uncommon` → `Rare` → `Epic` → `Legendary` → `Unknown`
+- **Item types:** `Wooden` → `Stone` → `Iron` → `Gold` → `Diamond` → `Unseen`
+- Item durability that degrades over time and can be restored
+- Detailed item info display
+
+</details>
+
+<details>
+<summary><b>🛡️ Equipment Slots</b></summary>
+<br/>
+
+- Dedicated slots for **Melee**, **Ranged**, and **Armor**
+- Equipped items directly impact gameplay rewards
+- Equip and unequip items freely from inventory
+
+</details>
+
+<details>
+<summary><b>🏪 Shop & Economy</b></summary>
+<br/>
+
+- Buy new items using in-game currency
+- Random rarity generation on shop items
+- Sell unwanted items — price depends on **rarity**, **type**, and **condition**
+
+</details>
+
+<details>
+<summary><b>⚔️ Play Mode</b></summary>
+<br/>
+
+- Core gameplay loop for earning money
+- Rewards scale with:
+  - 🛡️ Armor strength — better armor means less money lost
+  - ⭐ Weapon rarity
+  - 🔧 Item condition
+- Items degrade after each session
+- Random zombie attack events — watch your wallet
+
+</details>
+
+<details>
+<summary><b>🔧 Upgrade & Repair</b></summary>
+<br/>
+
+- **Upgrade:** Increase an item's type tier by one (costs currency)
+- **Repair:** Restore item durability — cost scales with type and damage level
+
+</details>
+
+<details>
+<summary><b>🕵️ Secret Codes</b></summary>
+<br/>
+
+- Hidden cheat commands for the curious
+- One-time use only — choose wisely
+
+</details>
+
+<details>
+<summary><b>🗺️ Navigation & Map</b></summary>
+<br/>
+
+- Full navigation guide included
+- Decorative in-game map (non-functional, purely cosmetic)
+
+</details>
+
+---
+
+## 🚀 How to Run
+
+### 🍎 macOS
+
+**1. Clone repository in desired location and enter it:**
 ```
-.../project_folder
+git clone https://github.com/megajohn150/inventory.git && cd inventory
 ```
-2. Create and enter build folder:
+**2. Create a build directory and enter it:**
 ```
 mkdir build && cd build
 ```
-3. Compile:
+**3. Configure with CMake:**
 ```
 cmake ..
 ```
+**3. Build the project:**
 ```
 make
 ```
-4. Run:
+**4. Run:**
 ```
 ./inventory
 ```
-
 ---
 
-# Build Instructions (Windows)
-Have fun :))
+### 🪟 Windows
 
-## ✔️ Variant 1 — MSYS2 Already Installed
+Two paths depending on your setup:
 
-This project requires **MSYS2** with `g++`.
+<details>
+<summary><b>✅ Variant 1 — MSYS2 Already Installed</b></summary>
+<br/>
 
-If you already have **MSYS2** installed:
+1. Open **MSYS2 UCRT64** terminal
+2. Navigate to the project:
 
-1. Open **MSYS2 UCRT64** terminal.
-2. Navigate to the project directory:
-```
+```bash
 cd /c/path/to/project
 ```
-### 3. Compile the program:
-```
+
+3. Compile:
+
+```bash
 g++ *.cpp -o game.exe
 ```
-### 4. Run the program:
-**Before running:**
-```
+
+4. Clear terminal, then run:
+
+```bash
 clear
-```
-```
 ./game.exe
 ```
-## ❌ Variant 2 — MSYS2 Not Installed
-### 1. Install MSYS2
 
-Download MSYS2 from the [official website](https://www.msys2.org/).
+</details>
 
-Install it using the default path (recommended: C:\msys64).
+<details>
+<summary><b>❌ Variant 2 — MSYS2 Not Installed</b></summary>
+<br/>
 
-### 2. Update Packages
+**Step 1 — Install MSYS2**
 
-Open MSYS2 UCRT64 and run:
-```
+Download from [msys2.org](https://www.msys2.org/) and install to the default path (`C:\msys64` recommended).
+
+**Step 2 — Update packages**
+
+Open **MSYS2 UCRT64** and run:
+
+```bash
 pacman -Syu
 ```
 
-If prompted to restart the terminal:
+> If prompted to restart — close, reopen, and run again.
 
-- Close it
+**Step 3 — Install g++**
 
-- Open MSYS2 UCRT64 again
-
-- Run the same command:
-```
-pacman -Syu
-```
-### 3. Install g++
-
-In the MSYS2 terminal, run:
-```
+```bash
 pacman -S mingw-w64-ucrt-x86_64-gcc
 ```
-Confirm installation with Y.
 
-### 4. Build the Project
+Confirm with `Y`.
+
+**Step 4 — Build & Run**
 
 Navigate to your project folder:
 
-cd /c/path/to/project 	(to make it work always use **"/" not backslash**  and disk name must be **"/disk letter/"**) ⚠️
+```bash
+cd /c/path/to/project
+```
 
-Compile:
-```
+> ⚠️ Always use `/` (forward slash), not `\`. Disk letter format: `/c/`, `/d/`, etc.
+
+```bash
 g++ *.cpp -o game.exe
-```
-Before run:
-```
 clear
-```
-Run:
-```
 ./game.exe
 ```
-### Verifying installation:
 
-Run:
-```
+**Verify your install:**
+
+```bash
 g++ --version
 ```
-## All of commands must be run in MSYS2 Terminal ‼️
+
+> ‼️ All commands must be run inside the **MSYS2 terminal**.
+
+</details>
+
 ---
 
-## Purpose
+## 🎓 Purpose
 
-This project is designed for learning:
+This project was built to practice and explore:
+
 - Object-oriented design in C++
 - Class relationships and data management
 - Game logic and state handling
 - Console UI interaction
+
+---
+
+<div align="center">
+  <sub>Built with ☕ and too much time in a terminal.</sub>
+</div>
