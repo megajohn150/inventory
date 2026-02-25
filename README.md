@@ -222,5 +222,5 @@ This project was built to practice and explore:
 ---
 
 <div align="center">
-  <sub>Built with ☕ and too much time in a terminal.</sub>
+  <sub>Built with ☕ and too much time in a terminal by megajohn150 & SlvxShybitskyi.</sub>
 </div>
