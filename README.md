@@ -1,6 +1,6 @@
 <div align="center">
 
-# ⚔️ Console RPG Inventory System
+# Console RPG Inventory System
 ### *A C++ console game built around deep item management*
 
 ![C++](https://img.shields.io/badge/C++-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white)
@@ -14,16 +14,16 @@
 
 ---
 
-## 🗺️ Overview
+## Overview
 
 A console-based RPG project written in **C++**, focused on a rich inventory and item management system. Equip weapons, manage durability, run the shop, and earn money — all from your terminal.
 
 ---
 
-## ✨ Features
+## Features
 
 <details>
-<summary><b>🎒 Inventory System</b></summary>
+<summary><b>Inventory System</b></summary>
 <br/>
 
 - Grid/slot-based inventory with row & column item selection
@@ -36,7 +36,7 @@ A console-based RPG project written in **C++**, focused on a rich inventory and 
 </details>
 
 <details>
-<summary><b>🛡️ Equipment Slots</b></summary>
+<summary><b>Equipment Slots</b></summary>
 <br/>
 
 - Dedicated slots for **Melee**, **Ranged**, and **Armor**
@@ -46,7 +46,7 @@ A console-based RPG project written in **C++**, focused on a rich inventory and 
 </details>
 
 <details>
-<summary><b>🏪 Shop & Economy</b></summary>
+<summary><b>Shop & Economy</b></summary>
 <br/>
 
 - Buy new items using in-game currency
@@ -56,21 +56,23 @@ A console-based RPG project written in **C++**, focused on a rich inventory and 
 </details>
 
 <details>
-<summary><b>⚔️ Play Mode</b></summary>
+<summary><b>Play Mode</b></summary>
 <br/>
 
 - Core gameplay loop for earning money
 - Rewards scale with:
-  - 🛡️ Armor strength — better armor means less money lost
-  - ⭐ Weapon rarity
-  - 🔧 Item condition
+  - Armor strength — better armor means less money lost
+  - Weapon rarity
+  - Item condition
 - Items degrade after each session
 - Random zombie attack events — watch your wallet
+- Small chance of boss fight occuring: big risk - big reward
+- If you are low on hp, heal yourself using medkits!
 
 </details>
 
 <details>
-<summary><b>🔧 Upgrade & Repair</b></summary>
+<summary><b>Upgrade & Repair</b></summary>
 <br/>
 
 - **Upgrade:** Increase an item's type tier by one (costs currency)
@@ -79,7 +81,7 @@ A console-based RPG project written in **C++**, focused on a rich inventory and 
 </details>
 
 <details>
-<summary><b>🕵️ Secret Codes</b></summary>
+<summary><b>Secret Codes</b></summary>
 <br/>
 
 - Hidden cheat commands for the curious
@@ -88,7 +90,7 @@ A console-based RPG project written in **C++**, focused on a rich inventory and 
 </details>
 
 <details>
-<summary><b>🗺️ Navigation & Map</b></summary>
+<summary><b>Navigation & Map</b></summary>
 <br/>
 
 - Full navigation guide included
@@ -98,9 +100,9 @@ A console-based RPG project written in **C++**, focused on a rich inventory and 
 
 ---
 
-## 🚀 How to Run
+## How to Run
 
-### 🍎 macOS
+### macOS
 
 **1. Clone repository in desired location and enter it:**
 ```
@@ -124,12 +126,12 @@ make
 ```
 ---
 
-### 🪟 Windows
+### Windows
 
 Two paths depending on your setup:
 
 <details>
-<summary><b>✅ Variant 1 — MSYS2 Already Installed</b></summary>
+<summary><b>Variant 1 — MSYS2 Already Installed ✔️</b></summary>
 <br/>
 
 1. Open **MSYS2 UCRT64** terminal
@@ -155,7 +157,7 @@ clear
 </details>
 
 <details>
-<summary><b>❌ Variant 2 — MSYS2 Not Installed</b></summary>
+<summary><b>Variant 2 — MSYS2 Not Installed ✖️</b></summary>
 <br/>
 
 **Step 1 — Install MSYS2**
@@ -188,7 +190,7 @@ Navigate to your project folder:
 cd /c/path/to/project
 ```
 
-> ⚠️ Always use `/` (forward slash), not `\`. Disk letter format: `/c/`, `/d/`, etc.
+> Always use `/` (forward slash), not `\`. Disk letter format: `/c/`, `/d/`, etc.
 
 ```bash
 g++ *.cpp -o game.exe
@@ -202,13 +204,13 @@ clear
 g++ --version
 ```
 
-> ‼️ All commands must be run inside the **MSYS2 terminal**.
+> All commands must be run inside the **MSYS2 terminal**.
 
 </details>
 
 ---
 
-## 🎓 Purpose
+## Purpose
 
 This project was built to practice and explore:
 
