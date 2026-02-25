@@ -32,13 +32,14 @@ A console-based RPG project written in **C++**, focused on a rich inventory and 
 - **Item types:** `Wooden` → `Stone` → `Iron` → `Gold` → `Diamond` → `Unseen`
 - Item durability that degrades over time and can be restored
 - Detailed item info display
+- Option to extend inventory slots using backpacks
 
 </details>
 
 <details>
 <summary><b>Equipment Slots</b></summary>
 <br/>
-
+  
 - Dedicated slots for **Melee**, **Ranged**, and **Armor**
 - Equipped items directly impact gameplay rewards
 - Equip and unequip items freely from inventory
@@ -52,7 +53,6 @@ A console-based RPG project written in **C++**, focused on a rich inventory and 
 - Buy new items using in-game currency
 - Random rarity generation on shop items
 - Sell unwanted items — price depends on **rarity**, **type**, and **condition**
-
 </details>
 
 <details>
