@@ -161,10 +161,13 @@ Game::~Game() {
 
 void Game::setPlayerName() {
     std::string name;
+
     system(CLEAR);
+
     std::cout << "Welcome, to start the game, please input your nickname: ";
-    std::cin >> name;
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+    std::getline(std::cin, name);
+
     this->player->setName(name);
 }
 
