@@ -13,7 +13,8 @@ private:
 
 public:
     Inventory();
-
+    int levenshteinDistance(std::string firstString, std::string secondString);
+    std::pair<int, int> searchNames(std::string target);
     bool addSmallBackpack();  // false = juz ma
     bool addLargeBackpack();  // false = juz ma
 
