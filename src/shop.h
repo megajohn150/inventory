@@ -9,9 +9,8 @@ public:
     Shop();
     void display() override;
     void displayTemplate(std::string cat);
-    std::vector<int> stock;
 private:
-    void decreaseStock(std::string );
+    void decreaseStock(std::string);
 };
 
 #endif
