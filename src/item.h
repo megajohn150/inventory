@@ -27,6 +27,7 @@ protected:
     int durability;
     int price;
     Type type;
+    int stock;
     std::string category;
     // close range weapons
     // long range weapons
@@ -55,6 +56,8 @@ public:
     void setCategory(const std::string &newCategory);
     Type getType() const;
     void setType(Type newType);
+    int getStock() const;
+    void setStock(int newStock);
 };
 
 #endif // ITEM_H

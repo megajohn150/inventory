@@ -1,69 +1,43 @@
 #include "shop.h"
+#include <iomanip>
+Shop::Shop() : GridBase(15, 1){};
 
-Shop::Shop() : GridBase(15, 1) {}
+
+
+
+
+void Shop::displayTemplate(std::string cat){
+    for (int i = 0; i < rows; i++){
+        if (items[i][0] && items[i][0]->getCategory() == cat){
+            if (i == currentRow) std::cout << " > ";
+            else                 std::cout << "   ";
+
+            std::cout << std::left << std::setw(25) << items[i][0]->getName();
+
+            if (i == currentRow){
+                std::cout << "Price: " << std::setw(8) << items[i][0]->getPrice();
+                if (items[i][0]->getStock() == 0)
+                    std::cout << "OUT OF STOCK";
+                else
+                    std::cout << "Stock: " << items[i][0]->getStock();
+            }
+
+            std::cout << "\n";
+        }
+    }
+}
 
 void Shop::display()
 {
+    int total = 0;
     std::cout << "~~~~~~~~~~~~~\nClose range weapons:\n";
-    for (int i = 0; i < rows; i++){
-        if (items[i][0] && items[i][0]->getCategory() == "close range weapons"){
-            if (i == currentRow){
-                std::cout << " > ";
-            }
-            else{
-                std::cout << " ";
-            }
-            std::cout << items[i][0]->getName() << "\n";
-        }
-    }
-
+    displayTemplate("close range weapons");
     std::cout << "~~~~~~~~~~~~~\nLong range weapons:\n";
-    for (int i = 0; i < rows; i++){
-        if (items[i][0] && items[i][0]->getCategory() == "long range weapons"){
-            if (i == currentRow){
-                std::cout << " > ";
-            }
-            else{
-                std::cout << " ";
-            }
-            std::cout << items[i][0]->getName() << "\n";
-        }
-    }
-
+    displayTemplate("long range weapons");
     std::cout << "~~~~~~~~~~~~~\nDefensive equipment:\n";
-    for (int i = 0; i < rows; i++){
-        if (items[i][0] && items[i][0]->getCategory() == "armor"){
-            if (i == currentRow){
-                std::cout << " > ";
-            }
-            else{
-                std::cout << " ";
-            }
-            std::cout << items[i][0]->getName() << "\n";
-        }
-    }
+    displayTemplate("armor");
     std::cout << "~~~~~~~~~~~~~\nFirst aid kits:\n";
-    for (int i = 0; i < rows; i++){
-        if (items[i][0] && items[i][0]->getCategory() == "medkit"){
-            if (i == currentRow){
-                std::cout << " > ";
-            }
-            else{
-                std::cout << " ";
-            }
-            std::cout << items[i][0]->getName() << "\n";
-        }
-    }
+    displayTemplate("medkit");
     std::cout << "~~~~~~~~~~~~~\nBackpacks:\n";
-    for (int i = 0; i < rows; i++){
-        if (items[i][0] && items[i][0]->getCategory() == "backpack"){
-            if (i == currentRow){
-                std::cout << " > ";
-            }
-            else{
-                std::cout << " ";
-            }
-            std::cout << items[i][0]->getName() << "\n";
-        }
-    }
+    displayTemplate("backpack");
 }
