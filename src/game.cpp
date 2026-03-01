@@ -1,7 +1,6 @@
 #include "game.h"
 #include "charCheck.h"
 #include "item.h"
-#include "store.h"
 #include <limits>
 #include "random.h"
 #include <vector>
@@ -45,8 +44,6 @@ Menu *Game::getMenu() const { return menu; }
 void Game::setMenu(Menu *newMenu) { menu = newMenu; }
 Shop *Game::getShop() const { return shop; }
 void Game::setShop(Shop *newShop) { shop = newShop; }
-Store *Game::getStore() const { return store; }
-void Game::setStore(Store *newStore) { store = newStore; }
 
 namespace Color {
 const std::string RED     = "\033[91m";
@@ -120,16 +117,13 @@ Game::Game() {
     this->player = new Player();
     this->menu   = new Menu();
     this->shop   = new Shop();
-    this->store  = new Store();
 
     menu->addItem(new Item("Play",      1, "game"));
     menu->addItem(new Item("Inventory", 1, "game"));
-    menu->addItem(new Item("Store",     1, "game"));
+    menu->addItem(new Item("Shop",     1, "game"));
+    menu->addItem(new Item("Market",     1, "game"));
     menu->addItem(new Item("Map",       1, "game"));
     menu->addItem(new Item("Guide",     1, "game"));
-
-    store->addItem(new Item("Buy",  1, "game"));
-    store->addItem(new Item("Sell", 1, "game"));
 
     shop->addItem(new Item("Sword",   15, "close range weapons"));
     shop->addItem(new Item("Katana",  35, "close range weapons"));
@@ -156,7 +150,6 @@ Game::~Game() {
     delete this->player;
     delete this->menu;
     delete this->shop;
-    delete this->store;
 }
 
 void Game::setPlayerName() {
@@ -357,7 +350,7 @@ void Game::play() {
 
     int  userInput      = 0;
     state               = STATE_MENU;
-    bool showPrice      = false;
+
     bool showInfo       = false;
     bool showStats      = false;
     bool equipMode      = false;
@@ -402,7 +395,8 @@ void Game::play() {
                 if (!item) break;
                 std::string sel = item->getName();
                 if      (sel == "Inventory") state = STATE_INVENTORY;
-                else if (sel == "Store")     state = STATE_STORE;
+                else if (sel == "Shop")     state = STATE_STORE_SHOP;
+                else if (sel == "Market")     state = STATE_STORE_SELL;
                 else if (sel == "Play")      state = STATE_PLAY;
                 else if (sel == "Map")       state = STATE_MAP;
                 else                         state = STATE_NAVIGATION;
@@ -1265,51 +1259,25 @@ void Game::play() {
                 break;
             }
         }
-        // ===================== STORE =====================
-        else if (state == STATE_STORE) {
-            std::cout << "<===== Store =====>\n\n";
-            store->display();
-            std::cout << "\n\n\n";
-
-            userInput = int(getSingleChar());
-            switch (userInput) {
-            case 'w': store->setCurrentRow(store->getCurrentRow() - 1); break;
-            case 's': store->setCurrentRow(store->getCurrentRow() + 1); break;
-            case 10: case 13: {
-                auto item = store->getItemOnSelectedRC(store->getCurrentRow(), store->getCurrentCol());
-                if (!item) break;
-                if (item->getName() == "Buy") state = STATE_STORE_SHOP;
-                else {
-                    state      = STATE_STORE_SELL;
-                    sellCursor = 0;
-                }
-                break;
-            }
-            case KEY_BACK: state = STATE_MENU; break;
-            }
-        }
 
         // ===================== SHOP (buy) =====================
         else if (state == STATE_STORE_SHOP) {
             std::cout << "<===== Shop =====>\n\n";
             std::cout << "Your current balance: " << player->getMoney() << "\n";
-            shop->display();
-
-            if (showPrice) {
-                if (auto item = shop->getItemOnSelectedRC(shop->getCurrentRow(), shop->getCurrentCol())) {
-                    std::cout << "~~~~~~~~~~~~~\n" << item->getName() << " price - " << item->getPrice() << "\n";
-                }
-            }
+            shop->display();            
 
             userInput = int(getSingleChar());
             switch (userInput) {
             case 'w': shop->setCurrentRow(shop->getCurrentRow() - 1); break;
             case 's': shop->setCurrentRow(shop->getCurrentRow() + 1); break;
-            case 'p': showPrice = !showPrice; break;
             case 'b': {
                 auto src = shop->getItemOnSelectedRC(shop->getCurrentRow(), shop->getCurrentCol());
                 if (!src) break;
                 int price = src->getPrice();
+
+                if(src->getStock() <= 0){
+                    break;
+                }
 
                 if (player->getMoney() < price) {
                     system(CLEAR);
@@ -1349,6 +1317,7 @@ void Game::play() {
                 if (player->getInv()->addItem(newItem)) {
                     player->setMoney(player->getMoney() - price);
                     stats.itemsBought++;
+                    src->setStock(src->getStock() - 1);
                     system(CLEAR);
                     std::cout << "Successfully bought " << src->getName();
                 } else {
@@ -1361,8 +1330,8 @@ void Game::play() {
 
             }
             case KEY_BACK:
-                state     = STATE_STORE;
-                showPrice = false;
+                state     = STATE_MENU;
+
                 break;
             }
         }
@@ -1402,7 +1371,7 @@ void Game::play() {
                 userInput = int(getSingleChar());
                 if (userInput == KEY_BACK) {
                     sellPending = false;
-                    state = STATE_STORE;
+                    state = STATE_MENU;
                 }
                 continue;
             }
@@ -1478,7 +1447,7 @@ void Game::play() {
             case KEY_BACK:
                 sellPending = false;
                 sellCursor  = 0;
-                state = STATE_STORE;
+                state = STATE_MENU;
                 break;
             default:
                 sellPending = false;
@@ -1520,7 +1489,7 @@ void Game::play() {
             std::cout << "<===== Navigation guide =====>\n\n";
             std::cout << "Movement:\n W, S, A, D or arrow keys\n~~~~~~~~~~~~~\n";
             std::cout << "Inventory functions:\n tab - change select\n i   - toggle info\n v   - toggle stats\n p   - weapon upgrade\n f   - search inventory\n r   - repair item\n e   - equip/unequip item\n u   - use medkit\n~~~~~~~~~~~~~\n";
-            std::cout << "Store functions:\n p - toggle price\n b - buy\n s - sell\n\n";
+            std::cout << "Store functions:\n p - toggle price & stock\n b - buy\n s - sell\n\n";
             std::cout << "<===== Upgrade prices =====>\n\n";
             std::cout << " Wooden -> Stone   - 20\n";
             std::cout << " Stone  -> Iron    - 50\n";
