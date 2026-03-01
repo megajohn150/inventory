@@ -144,6 +144,14 @@ Game::Game() {
 
     shop->addItem(new Item("Small backpack",    90, "backpack"));
     shop->addItem(new Item("Big backpack",    160, "backpack"));
+
+    for(int i = 0; i < shop->getRows(); i++){
+        if(shop->getItems()[i][0] != nullptr){
+            if(shop->getItems()[i][0]->getCategory() == "backpack"){
+                shop->getItems()[i][0]->setStock(1);
+            }
+        }
+    }
 }
 
 Game::~Game() {
@@ -409,7 +417,10 @@ void Game::play() {
                 else                 std::cout << "Backspace";
                 std::cout << " to confirm)";
                 int confirm = int(getSingleChar());
-                if (confirm == KEY_BACK) return;
+                if (confirm == KEY_BACK){
+                    system(CLEAR);
+                    return;
+                };
                 break;
             }
             }
@@ -1314,6 +1325,7 @@ void Game::play() {
                         player->setMoney(player->getMoney() - price);
                         stats.itemsBought++;
                         system(CLEAR);
+                        src->setStock(0);
                         std::cout << "Small backpack bought! +1 inventory column.";
                     }
                     getSingleChar();
@@ -1327,6 +1339,7 @@ void Game::play() {
                         player->setMoney(player->getMoney() - price);
                         stats.itemsBought++;
                         system(CLEAR);
+                        src->setStock(0);
                         std::cout << "Big backpack bought! +2 inventory columns.";
                     }
                     getSingleChar();

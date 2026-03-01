@@ -3,9 +3,6 @@
 Shop::Shop() : GridBase(15, 1){};
 
 
-
-
-
 void Shop::displayTemplate(std::string cat){
     for (int i = 0; i < rows; i++){
         if (items[i][0] && items[i][0]->getCategory() == cat){
