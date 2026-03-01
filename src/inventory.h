@@ -15,8 +15,8 @@ public:
     Inventory();
     int levenshteinDistance(std::string firstString, std::string secondString);
     std::pair<int, int> searchNames(std::string target);
-    bool addSmallBackpack();  // false = juz ma
-    bool addLargeBackpack();  // false = juz ma
+    bool addSmallBackpack();
+    bool addLargeBackpack();
 
     bool getHasSmallBackpack() const { return hasSmallBackpack; }
     bool getHasLargeBackpack() const { return hasLargeBackpack; }
@@ -24,6 +24,8 @@ public:
     void display(Equipment* eq = nullptr, bool equipMode = false);
     void display() override { display(nullptr, false); }
     void clearInv(Equipment* eq);
+    void cleanUp();
+    bool invNotEmpCheckup();
 };
 
 #endif // INVENTORY_H
