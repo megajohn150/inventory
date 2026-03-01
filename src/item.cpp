@@ -235,6 +235,16 @@ void Item::setType(Type newType)
     type = newType;
 }
 
+int Item::getStock() const
+{
+    return stock;
+}
+
+void Item::setStock(int newStock)
+{
+    stock = newStock;
+}
+
 Item::Item() {
     name = "random";
     price = 1;
@@ -242,6 +252,7 @@ Item::Item() {
     rarity = common;
     type = wooden;
     category = "random";
+    stock = Random::range(1,5);
 }
 
 
@@ -249,7 +260,9 @@ Item::Item(const std::string &name, int price, const std::string &category)
     : name(name),
     durability(100),
     price(price),
-    category(category)
+    category(category),
+    stock(Random::range(1,5))
+
 {
     int randNum = Random::range(1,100);
     if(randNum <= 50) {
