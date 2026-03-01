@@ -12,11 +12,12 @@ add_executable(inventory src/main.cpp
     src/game.h src/game.cpp
     src/charCheck.h
     src/random.h src/random.cpp
-    src/menu.h src/menu.cpp
+
     src/shop.h src/shop.cpp
 
     src/gridbase.h src/gridbase.cpp
     src/equipment.h src/equipment.cpp
+    src/displaylist.h src/displaylist.cpp
 )
 
 include(GNUInstallDirs)

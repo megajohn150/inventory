@@ -1,8 +1,8 @@
 #ifndef GAME_H
 #define GAME_H
 #include "player.h"
-#include "menu.h"
 #include "shop.h"
+#include "displaylist.h"
 enum GameState {
     STATE_MENU,
     STATE_INVENTORY,
@@ -20,10 +20,10 @@ class Game
 {
 private:
     Player* player;
-    Menu* menu;
     Shop* shop;
     GameState state;
-
+    DisplayList menu;
+    DisplayList filters;
 public:
     Game();
     ~Game();
@@ -31,8 +31,6 @@ public:
     void play();
     void setPlayer(Player *newPlayer);
     Player *getPlayer() const;
-    Menu *getMenu() const;
-    void setMenu(Menu *newMenu);
     Shop *getShop() const;
     void setShop(Shop *newShop);
 

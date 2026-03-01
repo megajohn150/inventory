@@ -1,7 +1,6 @@
 #include "game.h"
 #include "charCheck.h"
 #include "item.h"
-#include <limits>
 #include "random.h"
 #include <vector>
 #include <chrono>
@@ -40,8 +39,6 @@ int kbhit() {
 #endif
 void Game::setPlayer(Player *newPlayer) { player = newPlayer; }
 Player *Game::getPlayer() const { return player; }
-Menu *Game::getMenu() const { return menu; }
-void Game::setMenu(Menu *newMenu) { menu = newMenu; }
 Shop *Game::getShop() const { return shop; }
 void Game::setShop(Shop *newShop) { shop = newShop; }
 
@@ -115,15 +112,17 @@ static std::string hpColor(int hp) {
 
 Game::Game() {
     this->player = new Player();
-    this->menu   = new Menu();
     this->shop   = new Shop();
 
-    menu->addItem(new Item("Play",      1, "game"));
-    menu->addItem(new Item("Inventory", 1, "game"));
-    menu->addItem(new Item("Shop",     1, "game"));
-    menu->addItem(new Item("Market",     1, "game"));
-    menu->addItem(new Item("Map",       1, "game"));
-    menu->addItem(new Item("Guide",     1, "game"));
+    menu.add("Play");
+    menu.add("Inventory");
+    menu.add("Shop");
+    menu.add("Market");
+    menu.add("Map");
+    menu.add("Guide");
+
+    filters.add("Search item");
+    filters.add("Clean up");
 
     shop->addItem(new Item("Sword",   15, "close range weapons"));
     shop->addItem(new Item("Katana",  35, "close range weapons"));
@@ -156,7 +155,6 @@ Game::Game() {
 
 Game::~Game() {
     delete this->player;
-    delete this->menu;
     delete this->shop;
 }
 
@@ -391,22 +389,21 @@ void Game::play() {
         // ===================== MENU =====================
         if (state == STATE_MENU) {
             std::cout << "<===== Welcome to the game, " << player->getName() << "! =====>\n\n~~~~~~~~~~~~~\n";
-            menu->display();
+            menu.displayMenu();
             std::cout << "\n\n\n";
 
             userInput = int(getSingleChar());
             switch (userInput) {
-            case 'w': menu->setCurrentRow(menu->getCurrentRow() - 1); break;
-            case 's': menu->setCurrentRow(menu->getCurrentRow() + 1); break;
+            case 'w': menu.setCurrentItem(menu.getCurrentItem() - 1); break;
+            case 's': menu.setCurrentItem(menu.getCurrentItem() + 1); break;
             case 10: case 13: {
-                auto item = menu->getItemOnSelectedRC(menu->getCurrentRow(), menu->getCurrentCol());
-                if (!item) break;
-                std::string sel = item->getName();
-                if      (sel == "Inventory") state = STATE_INVENTORY;
-                else if (sel == "Shop")     state = STATE_STORE_SHOP;
-                else if (sel == "Market")     state = STATE_STORE_SELL;
-                else if (sel == "Play")      state = STATE_PLAY;
-                else if (sel == "Map")       state = STATE_MAP;
+                int ci = menu.getCurrentItem();
+                auto item = menu.getNames()[ci];
+                if      (item == "Inventory") state = STATE_INVENTORY;
+                else if (item == "Shop")     state = STATE_STORE_SHOP;
+                else if (item == "Market")     state = STATE_STORE_SELL;
+                else if (item == "Play")      state = STATE_PLAY;
+                else if (item == "Map")       state = STATE_MAP;
                 else                         state = STATE_NAVIGATION;
                 break;
             }
@@ -925,15 +922,15 @@ void Game::play() {
 
             std::cout << "\n";
             if (equipMode) {
-                std::cout << "[TAB] inventory  [A/D] move  [E] unequip  [I] info  [P] upgrade  [R] repair  [F] Search inventory  [V] stats [C] Clean up\n";
+                std::cout << "[TAB] inventory  [A/D] move  [E] unequip  [I] info  [P] upgrade  [R] repair  [F] filters etc.  [V] stats\n";
             } else {
                 auto hintItem = player->getInv()->getItemOnSelectedRC(
                     player->getInv()->getCurrentRow(),
                     player->getInv()->getCurrentCol());
                 if (hintItem && hintItem->getCategory() == "medkit") {
-                    std::cout << "[TAB] equipment  [WASD] move  [I] info  [U] use  [F] Search inventory  [V] stats\n";
+                    std::cout << "[TAB] equipment  [WASD] move  [I] info  [U] use  [F] search inventory  [V] stats\n";
                 } else {
-                    std::cout << "[TAB] equipment  [WASD] move  [E] equip  [I] info  [P] upgrade  [R] repair  [F] Search inventory  [V] stats [C] Clean up\n";
+                    std::cout << "[TAB] equipment  [WASD] move  [E] equip  [I] info  [P] upgrade  [R] repair  [F] filters etc.  [V] stats\n";
                 }
             }
 
@@ -1021,42 +1018,54 @@ void Game::play() {
                 else           player->getInv()->setCurrentCol(player->getInv()->getCurrentCol() + 1);
                 break;
             case 'f':{
-                std::string target;
-                std::pair<int, int> rowAndCol;
-                int givenRow;
-                int givenCol;
-                system(CLEAR);
-                std::cout << "<===== " << player->getName() << "'s inventory =====>\n\n";
-                std::cout << "Balance: " << player->getMoney()
-                          << " | HP: " << hpColor(player->getHp())
-                          << player->getHp() << Color::RESET
-                          << "                 ";
-
-                if (equipMode)
-                    std::cout << " [Inventory]  >[EQUIPMENT]<\n\n";
-                else
-                    std::cout << ">[INVENTORY]<  [Equipment]\n\n";
-
-                player->getInv()->display(player->getEquip(), equipMode);
-
-                std::cout << "~~~~~~~~~~~~~~~~~~~\n";
-                std::cout << "Search an item in your inventory: ";
-                while (std::cin.peek() == '\n') std::cin.ignore();
-                std::getline(std::cin, target);
-                std::cout << "\n";
-
-                rowAndCol = player->getInv()->searchNames(target);
-                givenRow = rowAndCol.first;
-                givenCol = rowAndCol.second;
-                if(givenRow == - 1 && givenCol == - 1){
+                auto displayInv = [&](){
                     system(CLEAR);
-                    std::cout << "Item '" << target << "' not found :(";
-                    getSingleChar();
-                }
-                else{
-                    player->getInv()->setCurrentRow(givenRow);
-                    player->getInv()->setCurrentCol(givenCol);
-                    equipMode = false;
+                    std::cout << "<===== " << player->getName() << "'s inventory =====>\n\n";
+                    std::cout << "Balance: " << player->getMoney()
+                              << " | HP: " << hpColor(player->getHp())
+                              << player->getHp() << Color::RESET << "                 ";
+                    std::cout << (equipMode ? " [Inventory]  >[EQUIPMENT]<\n\n" : ">[INVENTORY]<  [Equipment]\n\n");
+                    player->getInv()->display(player->getEquip(), equipMode);
+                    std::cout << "~~~~~~~~~~~~~~~~~~~\n";
+                };
+
+                bool inFilters = true;
+                while(inFilters){
+                    displayInv();
+                    filters.displayFilters();
+                    std::cout << "\n[W/S] move  [ENTER] select  [BACKSPACE] back\n";
+                    userInput = int(getSingleChar());
+                    switch(userInput){
+                    case 'w': filters.move("up");   break;
+                    case 's': filters.move("down"); break;
+                    case 10: case 13:{
+                        if(filters.getCurrentItem() == 0){
+                            std::string target;
+                            displayInv();
+                            std::cout << "Search an item in your inventory: ";
+                            while (std::cin.peek() == '\n') std::cin.ignore();
+                            std::getline(std::cin, target);
+                            auto [givenRow, givenCol] = player->getInv()->searchNames(target);
+                            if(givenRow == -1 && givenCol == -1){
+                                displayInv();
+                                std::cout << "Item '" << target << "' not found in inventory :(";
+                                getSingleChar();
+                            } else {
+                                player->getInv()->setCurrentRow(givenRow);
+                                player->getInv()->setCurrentCol(givenCol);
+                                equipMode = false;
+                            }
+                        } else {
+                            lastEvent = "";
+                            auto inv = player->getInv();
+                            lastEvent = inv->invNotEmpCheckup() ? "" : "You can't use clean up, inventory is empty!";
+                            if(inv->invNotEmpCheckup()) inv->cleanUp();
+                        }
+                        inFilters = false;
+                        break;
+                    }
+                    case KEY_BACK: inFilters = false; break;
+                    }
                 }
                 break;
             }
@@ -1257,18 +1266,6 @@ void Game::play() {
                 }
                 break;
 
-            case 'c':{
-                lastEvent = "";
-                auto inv = player->getInv();
-                if(inv->invNotEmpCheckup() == true){
-                    inv->cleanUp();
-                }
-                else{
-                    lastEvent = "You can't use clean up, inventory is empty!";
-                }
-
-                break;
-            }
 
             case KEY_BACK:
                 state          = STATE_MENU;
