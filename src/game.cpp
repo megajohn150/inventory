@@ -907,9 +907,14 @@ void Game::play() {
                 std::cout << medkitMsg << "\n";
             }
 
+            if(!lastEvent.empty()){
+                std::cout << "~~~~~~~~~~~~~~~~~~~\n";
+                std::cout << lastEvent << "\n";
+            }
+
             std::cout << "\n";
             if (equipMode) {
-                std::cout << "[TAB] inventory  [A/D] move  [E] unequip  [I] info  [P] upgrade  [R] repair  [F] Search inventory  [V] stats\n";
+                std::cout << "[TAB] inventory  [A/D] move  [E] unequip  [I] info  [P] upgrade  [R] repair  [F] Search inventory  [V] stats [C] Clean up\n";
             } else {
                 auto hintItem = player->getInv()->getItemOnSelectedRC(
                     player->getInv()->getCurrentRow(),
@@ -917,7 +922,7 @@ void Game::play() {
                 if (hintItem && hintItem->getCategory() == "medkit") {
                     std::cout << "[TAB] equipment  [WASD] move  [I] info  [U] use  [F] Search inventory  [V] stats\n";
                 } else {
-                    std::cout << "[TAB] equipment  [WASD] move  [E] equip  [I] info  [P] upgrade  [R] repair  [F] Search inventory  [V] stats\n";
+                    std::cout << "[TAB] equipment  [WASD] move  [E] equip  [I] info  [P] upgrade  [R] repair  [F] Search inventory  [V] stats [C] Clean up\n";
                 }
             }
 
@@ -1206,6 +1211,7 @@ void Game::play() {
 
                 break;
             }
+
             case 'u':
                 repairPending  = false;
                 upgradePending = false;
@@ -1240,6 +1246,19 @@ void Game::play() {
                 }
                 break;
 
+            case 'c':{
+                lastEvent = "";
+                auto inv = player->getInv();
+                if(inv->invNotEmpCheckup() == true){
+                    inv->cleanUp();
+                }
+                else{
+                    lastEvent = "You can't use clean up, inventory is empty!";
+                }
+
+                break;
+            }
+
             case KEY_BACK:
                 state          = STATE_MENU;
                 showInfo       = false;
@@ -1247,6 +1266,7 @@ void Game::play() {
                 equipMode      = false;
                 repairPending  = false;
                 upgradePending = false;
+                lastEvent      = "";
                 medkitMsg      = "";
                 secretCode     = "";
                 break;

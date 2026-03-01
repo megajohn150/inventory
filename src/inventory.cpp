@@ -2,6 +2,7 @@
 #include <vector>
 #include <cctype>
 #include <sstream>
+#include <algorithm>
 Inventory::Inventory() : GridBase(4, 4) {}
 
 void Inventory::expandCols(int addCols)
@@ -103,6 +104,40 @@ void Inventory::clearInv(Equipment* eq)
     }
     if (eq) {
         eq->clear();
+    }
+}
+
+bool Inventory::invNotEmpCheckup(){
+    std::vector<Item*> temp;
+    for(int i = 0; i < rows; i++){
+        for(int j = 0; j < cols; j++){
+            if(items[i][j] != nullptr){
+                temp.push_back(items[i][j]);
+            }
+        }
+    }
+    if(temp.size() > 0) return true;
+    else return false;
+}
+
+void Inventory::cleanUp()
+{
+    std::vector<Item*> temp;
+    for(int i = 0; i < rows; i++){
+        for(int j = 0; j < cols; j++){
+            if(items[i][j] != nullptr){
+                temp.push_back(items[i][j]);
+                items[i][j] = nullptr;
+            }
+        }
+    }
+    int k = 0;
+    for(int i = 0; i < rows; i++){
+        for(int j = 0; j < cols; j++){
+            items[i][j] = temp[k];
+            k++;
+            if(k >= temp.size()) return;
+        }
     }
 }
 int Inventory::levenshteinDistance(std::string firstString, std::string secondString)
