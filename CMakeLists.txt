@@ -20,8 +20,11 @@ add_executable(inventory src/main.cpp
     src/displaylist.h src/displaylist.cpp
 )
 
+target_include_directories(inventory PRIVATE include)
+
 include(GNUInstallDirs)
 install(TARGETS inventory
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+
