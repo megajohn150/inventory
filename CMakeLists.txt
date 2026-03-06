@@ -19,6 +19,8 @@ add_executable(inventory src/main.cpp
     src/equipment.h src/equipment.cpp
 )
 
+target_include_directories(inventory PRIVATE include)
+
 include(GNUInstallDirs)
 install(TARGETS inventory
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
