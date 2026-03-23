@@ -1,43 +1,3 @@
-// #ifndef CHARCHECK_H
-// #define CHARCHECK_H
-
-// #include <iostream>
-// #ifdef _WIN32
-// #include <conio.h> // For _getch() on Windows
-// #define OS_NAME "Windows"
-// #define CLEAR "cls"
-// #elif __APPLE__
-// #include <TargetConditionals.h>
-// #include <termios.h>
-// #include <unistd.h>
-// #if TARGET_OS_MAC
-// #define OS_NAME "macOS"
-// #define CLEAR "clear"
-// #endif
-// #else
-// #define OS_NAME "Unknown OS"
-// #define CLEAR "clear"
-// #endif
-
-// char getSingleChar() {
-// #ifdef _WIN32
-//     return _getch(); // Windows: Get character without Enter
-// #elif __APPLE__
-//     struct termios oldt, newt;
-//     char ch;
-//     tcgetattr(STDIN_FILENO, &oldt); // Get current terminal attributes
-//     newt = oldt;
-//     newt.c_lflag &= ~(ICANON | ECHO); // Disable line buffering & echo
-//     tcsetattr(STDIN_FILENO, TCSANOW, &newt); // Apply new attributes
-//     ch = getchar(); // Read single character
-//     tcsetattr(STDIN_FILENO, TCSANOW, &oldt); // Restore old attributes
-//     return ch;
-// #endif
-// }
-
-// #endif // CHARCHECK_H
-
-// chatgpt
 #ifndef CHARCHECK_H
 #define CHARCHECK_H
 
@@ -60,7 +20,6 @@
 #define CLEAR "clear"
 #endif
 
-// f
 char getSingleChar() {
 #ifdef _WIN32
     char ch;
@@ -81,7 +40,7 @@ char getSingleChar() {
     tcsetattr(STDIN_FILENO, TCSANOW, &newt);
     ch = getchar();
 
-    // obsługa strzałek
+    // Handle arrow keys
     if(ch == 27) { // ESC
         char ch2 = getchar();
         if(ch2 == '[') {
