@@ -35,30 +35,25 @@ void DisplayList::add(std::string name)
 
 void DisplayList::displayMenu()
 {
-    for(int i = 0; i < names.size(); i++){
-        if(currentItem == i){
+    for(int i = 0; i < names.size(); i++) {
+        if(currentItem == i) {
             std::cout << " > ";
-        }
-        else{
+        } else {
             std::cout << " ";
-        }std::cout << names[i] << "\n";
-        if(i == 1)
-            std::cout << "~~~~~~~~~~~~~\n";
-        if(i == 3)
-            std::cout << "~~~~~~~~~~~~~\n";
-        if(i == 5)
-            std::cout << "~~~~~~~~~~~~~\n";
+        }
+        std::cout << names[i] << "\n";
 
+        if(i == 1 || i == 3 || i == 5)
+            std::cout << "~~~~~~~~~~~~~\n";
     }
 }
 
 void DisplayList::displayFilters()
 {
-    for(int i = 0; i < names.size(); i++){
-        if(currentItem == i){
+    for(int i = 0; i < names.size(); i++) {
+        if(currentItem == i) {
             std::cout << " > ";
-        }
-        else{
+        } else {
             std::cout << " ";
         }
         std::cout << names[i] << "\n";
@@ -67,17 +62,16 @@ void DisplayList::displayFilters()
 
 void DisplayList::move(std::string dir)
 {
-    if(dir == "down"){
+    if(dir == "down") {
         currentItem++;
-        if(currentItem >= names.size()){
+        if(currentItem >= (int)names.size()) {
             currentItem = 0;
         }
     }
-    else{
+    else {
         currentItem--;
-        if(currentItem >= names.size()){
-            currentItem = getNames().size()-1;
+        if(currentItem < 0) {
+            currentItem = (int)names.size() - 1;
         }
     }
-
 }

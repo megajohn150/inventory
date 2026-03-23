@@ -60,6 +60,8 @@ void Item::setRarity(Rarity newRarity)
 
 void Item::upgradeType()
 {
+    // Upgrade item through the material progression chain
+    // wooden -> stone -> iron -> gold -> diamond
     switch (this->type) {
     case wooden:
         this->type = stone;
@@ -114,10 +116,11 @@ void Item::setPrice(int newPrice)
 
 void Item::use()
 {
+    // Calculate damage based on material type and reduce durability
+    // Better materials deal more consistent (lower range) damage
     int dmg = 0;
 
-    switch (this->type)
-    {
+    switch (this->type) {
     case wooden:
         dmg = Random::range(1, 10);
         break;
@@ -166,25 +169,18 @@ std::string Item::getRarityString()
     switch (this->rarity) {
     case common:
         return "common";
-        break;
     case uncommon:
         return "uncommon";
-        break;
     case rare:
         return "rare";
-        break;
     case epic:
         return "epic";
-        break;
     case legendary:
         return "legendary";
-        break;
     case unknown:
         return "unknown";
-        break;
     default:
         return "common";
-        break;
     }
 }
 
@@ -193,25 +189,18 @@ std::string Item::getTypeString()
     switch (this->type) {
     case wooden:
         return "Wooden";
-        break;
     case stone:
         return "Stone";
-        break;
     case iron:
         return "Iron";
-        break;
     case gold:
         return "Gold";
-        break;
     case diamond:
         return "Diamond";
-        break;
     case unseen:
         return "Unseen";
-        break;
     default:
         return "Wooden";
-        break;
     }
 }
 

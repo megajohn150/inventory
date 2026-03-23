@@ -3,6 +3,7 @@
 #include <cctype>
 #include <sstream>
 #include <algorithm>
+
 Inventory::Inventory() : GridBase(4, 4) {}
 
 void Inventory::expandCols(int addCols)
@@ -44,19 +45,15 @@ bool Inventory::addLargeBackpack()
 
 void Inventory::display(Equipment* eq, bool equipMode)
 {
-
-    int baseEnd  = 4;
+    int baseEnd = 4;
     int smallEnd = hasSmallBackpack ? baseEnd + 1 : baseEnd;
-    // int largeEnd = hasLargeBackpack ? smallEnd + 2 : smallEnd;
-    if (hasSmallBackpack || hasLargeBackpack) {
 
+    if (hasSmallBackpack || hasLargeBackpack) {
         std::cout << "                    ";
-        if (hasSmallBackpack) {
+        if (hasSmallBackpack)
             std::cout << "    SBP ";
-        }
-        if (hasLargeBackpack) {
+        if (hasLargeBackpack)
             std::cout << "       BBP    ";
-        }
         std::cout << "\n";
     }
     for (int i = 0; i < rows; i++) {
@@ -84,8 +81,6 @@ void Inventory::display(Equipment* eq, bool equipMode)
     }
     std::cout << "\n";
 
-
-
     if (eq)
         eq->display(equipMode);
     else {
@@ -109,17 +104,16 @@ void Inventory::clearInv(Equipment* eq)
     }
 }
 
-bool Inventory::invNotEmpCheckup(){
-    std::vector<Item*> temp;
-    for(int i = 0; i < rows; i++){
-        for(int j = 0; j < cols; j++){
-            if(items[i][j] != nullptr){
-                temp.push_back(items[i][j]);
+bool Inventory::invNotEmpCheckup()
+{
+    for(int i = 0; i < rows; i++) {
+        for(int j = 0; j < cols; j++) {
+            if(items[i][j] != nullptr) {
+                return true;
             }
         }
     }
-    if(temp.size() > 0) return true;
-    else return false;
+    return false;
 }
 
 void Inventory::cleanUp()
@@ -143,12 +137,15 @@ void Inventory::cleanUp()
 
 void Inventory::sortByRarity()
 {
+    // Sort inventory by item rarity (best to worst)
+    // Rarity order: unknown -> legendary -> epic -> rare -> uncommon -> common
+    // Medkits are always placed at the end
     std::vector<Item*> temp;
-    auto eachRarity = [&](Rarity r){
-        for(int i = 0; i < rows; i++){
-            for(int j = 0; j < cols; j++){
-                if(items[i][j] != nullptr){
-                    if(items[i][j]->getRarity() == r && items[i][j]->getCategory() != "medkit"){
+    auto eachRarity = [&](Rarity r) {
+        for(int i = 0; i < rows; i++) {
+            for(int j = 0; j < cols; j++) {
+                if(items[i][j] != nullptr) {
+                    if(items[i][j]->getRarity() == r && items[i][j]->getCategory() != "medkit") {
                         temp.push_back(items[i][j]);
                         items[i][j] = nullptr;
                     }
@@ -156,6 +153,8 @@ void Inventory::sortByRarity()
             }
         }
     };
+
+    // Process rarities from best to worst
     eachRarity(unknown);
     eachRarity(legendary);
     eachRarity(epic);
@@ -163,19 +162,20 @@ void Inventory::sortByRarity()
     eachRarity(uncommon);
     eachRarity(common);
 
-
-    for(int i = 0; i < rows; i++){
-        for(int j = 0; j < cols; j++){
-            if(items[i][j] != nullptr && items[i][j]->getCategory() == "medkit"){
+    // Add medkits at the end
+    for(int i = 0; i < rows; i++) {
+        for(int j = 0; j < cols; j++) {
+            if(items[i][j] != nullptr && items[i][j]->getCategory() == "medkit") {
                 temp.push_back(items[i][j]);
                 items[i][j] = nullptr;
             }
         }
     }
 
+    // Redistribute sorted items back into grid
     int k = 0;
-    for(int i = 0; i < rows; i++){
-        for(int j = 0; j < cols; j++){
+    for(int i = 0; i < rows; i++) {
+        for(int j = 0; j < cols; j++) {
             items[i][j] = (k < (int)temp.size()) ? temp[k++] : nullptr;
         }
     }
@@ -183,12 +183,15 @@ void Inventory::sortByRarity()
 
 void Inventory::sortByType()
 {
+    // Sort inventory by material type (best to worst)
+    // Material order: unseen -> diamond -> gold -> iron -> stone -> wooden
+    // Medkits are always placed at the end
     std::vector<Item*> temp;
-    auto eachType = [&](Type t){
-        for(int i = 0; i < rows; i++){
-            for(int j = 0; j < cols; j++){
-                if(items[i][j] != nullptr){
-                    if(items[i][j]->getType() == t && items[i][j]->getCategory() != "medkit"){
+    auto eachType = [&](Type t) {
+        for(int i = 0; i < rows; i++) {
+            for(int j = 0; j < cols; j++) {
+                if(items[i][j] != nullptr) {
+                    if(items[i][j]->getType() == t && items[i][j]->getCategory() != "medkit") {
                         temp.push_back(items[i][j]);
                         items[i][j] = nullptr;
                     }
@@ -196,6 +199,8 @@ void Inventory::sortByType()
             }
         }
     };
+
+    // Process material types from best to worst
     eachType(unseen);
     eachType(diamond);
     eachType(gold);
@@ -203,19 +208,20 @@ void Inventory::sortByType()
     eachType(stone);
     eachType(wooden);
 
-
-    for(int i = 0; i < rows; i++){
-        for(int j = 0; j < cols; j++){
-            if(items[i][j] != nullptr && items[i][j]->getCategory() == "medkit"){
+    // Add medkits at the end
+    for(int i = 0; i < rows; i++) {
+        for(int j = 0; j < cols; j++) {
+            if(items[i][j] != nullptr && items[i][j]->getCategory() == "medkit") {
                 temp.push_back(items[i][j]);
                 items[i][j] = nullptr;
             }
         }
     }
 
+    // Redistribute sorted items back into grid
     int k = 0;
-    for(int i = 0; i < rows; i++){
-        for(int j = 0; j < cols; j++){
+    for(int i = 0; i < rows; i++) {
+        for(int j = 0; j < cols; j++) {
             items[i][j] = (k < (int)temp.size()) ? temp[k++] : nullptr;
         }
     }
@@ -223,18 +229,24 @@ void Inventory::sortByType()
 
 void Inventory::applyFilters()
 {
+    // Apply active filters and mark items that don't match as masked
+    // Masked items are displayed as '.' instead of their first letter
     maskedItems.clear();
 
-    for(int i = 0; i < rows; i++){
-        for(int j = 0; j < cols; j++){
+    for(int i = 0; i < rows; i++) {
+        for(int j = 0; j < cols; j++) {
             if(items[i][j] == nullptr) continue;
 
             bool hide = false;
-            if(filteredType   && items[i][j]->getType()   != activeTypeFilter)   hide = true;
-            if(filteredRarity && items[i][j]->getRarity() != activeRarityFilter) hide = true;
+            // Hide if type filter is active and item doesn't match
+            if(filteredType && items[i][j]->getType() != activeTypeFilter)
+                hide = true;
+            // Hide if rarity filter is active and item doesn't match
+            if(filteredRarity && items[i][j]->getRarity() != activeRarityFilter)
+                hide = true;
 
-            if(hide){
-                maskedItems[{i,j}] = items[i][j]->getName();
+            if(hide) {
+                maskedItems[{i, j}] = items[i][j]->getName();
             }
         }
     }
@@ -257,11 +269,12 @@ void Inventory::filterByRarity(Rarity r)
 
 void Inventory::filter()
 {
+    // Quick filter: hide all items that are not diamond type
     maskedItems.clear();
-    for(int i = 0; i < rows; i++){
-        for(int j = 0; j < cols; j++){
-            if(items[i][j] != nullptr && items[i][j]->getType() != diamond){
-                maskedItems[{i,j}] = items[i][j]->getName();
+    for(int i = 0; i < rows; i++) {
+        for(int j = 0; j < cols; j++) {
+            if(items[i][j] != nullptr && items[i][j]->getType() != diamond) {
+                maskedItems[{i, j}] = items[i][j]->getName();
             }
         }
     }
@@ -270,17 +283,21 @@ void Inventory::filter()
 
 void Inventory::unfilter()
 {
+    // Remove all active filters and show all items
     maskedItems.clear();
     filtered = filteredType = filteredRarity = false;
 }
 
 int Inventory::levenshteinDistance(std::string firstString, std::string secondString)
 {
+    // Calculate edit distance between two strings (case-insensitive)
+    // Used for fuzzy search matching in inventory
     int firstLength = firstString.length();
     int secondLength = secondString.length();
 
     std::vector<std::vector<int>> editDistanceTable(firstLength + 1, std::vector<int>(secondLength + 1));
 
+    // Initialize base cases
     for (int row = 0; row <= firstLength; row++) {
         editDistanceTable[row][0] = row;
     }
@@ -289,6 +306,7 @@ int Inventory::levenshteinDistance(std::string firstString, std::string secondSt
         editDistanceTable[0][col] = col;
     }
 
+    // Fill the DP table
     for (int row = 1; row <= firstLength; row++) {
         for (int col = 1; col <= secondLength; col++) {
             if (tolower(firstString[row - 1]) == tolower(secondString[col - 1])) {
@@ -308,11 +326,15 @@ int Inventory::levenshteinDistance(std::string firstString, std::string secondSt
 
 std::pair<int, int> Inventory::searchNames(std::string target)
 {
+    // Fuzzy search for items by name or type
+    // Returns grid position {row, col} of best match, or {-1, -1} if not found
     std::vector<std::tuple<int, int, std::string, int>> results;
 
+    // Normalize search target to lowercase
     std::string normalizedTarget = target;
     std::transform(normalizedTarget.begin(), normalizedTarget.end(), normalizedTarget.begin(), ::tolower);
 
+    // Split multi-word searches into individual terms
     std::vector<std::string> targetWords;
     std::stringstream tss(normalizedTarget);
     std::string tword;

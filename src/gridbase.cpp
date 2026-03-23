@@ -7,6 +7,7 @@ GridBase::GridBase(int r, int c)
     currentRow = 0;
     currentCol = 0;
 
+    // Allocate 2D array for items
     items = new Item**[rows];
     for (int i = 0; i < rows; i++) {
         items[i] = new Item*[cols];
@@ -27,9 +28,9 @@ GridBase::~GridBase()
 
 void GridBase::clear()
 {
-    for (int i = 0; i < rows; i++){
-        for (int j = 0; j < cols; j++){
-            if (items[i][j] != nullptr){
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            if (items[i][j] != nullptr) {
                 delete items[i][j];
                 items[i][j] = nullptr;
             }
@@ -39,9 +40,9 @@ void GridBase::clear()
 
 bool GridBase::addItem(Item *item)
 {
-    for (int i = 0; i < rows; i++){
-        for (int j = 0; j < cols; j++){
-            if (items[i][j] == nullptr){
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            if (items[i][j] == nullptr) {
                 items[i][j] = item;
                 return true;
             }
@@ -52,7 +53,7 @@ bool GridBase::addItem(Item *item)
 
 bool GridBase::removeItem(int row, int col)
 {
-    if (items[row][col] != nullptr){
+    if (items[row][col] != nullptr) {
         delete items[row][col];
         items[row][col] = nullptr;
         return true;
@@ -82,17 +83,20 @@ bool GridBase::moveTo(int oldRow, int oldCol, int newRow, int newCol)
 
 void GridBase::sort()
 {
+    // Compact items to the beginning of the grid (remove gaps)
     std::vector<Item*> allItems;
 
-    for (int i = 0; i < rows; i++){
-        for (int j = 0; j < cols; j++){
-            if (items[i][j] != nullptr){
+    // Collect all items
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            if (items[i][j] != nullptr) {
                 allItems.push_back(items[i][j]);
                 items[i][j] = nullptr;
             }
         }
     }
 
+    // Re-add items to fill grid from the start
     for (Item* item : allItems)
         addItem(item);
 }
@@ -102,7 +106,8 @@ void GridBase::setRows(int newRows) { rows = newRows; }
 int GridBase::getCols() const { return cols; }
 void GridBase::setCols(int newCols) { cols = newCols; }
 Item*** GridBase::getItems() const { return items; }
-Item* GridBase::getItemOnSelectedRC(int row, int col) {
+Item* GridBase::getItemOnSelectedRC(int row, int col)
+{
     if(row < 0 || row >= rows || col < 0 || col >= cols)
         return nullptr;
     return items[row][col];

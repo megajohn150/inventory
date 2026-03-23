@@ -1,11 +1,12 @@
 #include "menu.h"
+#include <iostream>
 
 Menu::Menu() : GridBase(7, 1) {}
 
 void Menu::display()
 {
-    for (int i = 0; i < rows; i++){
-        for (int j = 0; j < cols; j++){
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
             if (i == currentRow && j == currentCol)
                 std::cout << ">  ";
 
@@ -13,12 +14,11 @@ void Menu::display()
                 std::cout << items[i][j]->getName();
         }
 
-        if(i == 2)
-            std::cout << "\n~~~~~~~~~~~~~\n";
-        else if (i == 4){
+        if (i == 2 || i == 4) {
             std::cout << "\n~~~~~~~~~~~~~\n";
         }
-        else
+        else {
             std::cout << "\n";
+        }
     }
 }

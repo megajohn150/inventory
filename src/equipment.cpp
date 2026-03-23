@@ -12,12 +12,22 @@ Equipment::~Equipment()
     delete melee;
     delete ranged;
 }
-Item* Equipment::getSelectedItem(){
-    switch(getCursorSlot()){
-    case 0: return armor;
-    case 1: return ranged;
-    case 2: return melee;
-    default: return nullptr;
+
+Item* Equipment::getSelectedItem()
+{
+    // Slot layout:
+    // 0 = armor (head)
+    // 1 = ranged weapon (left hand)
+    // 2 = melee weapon (right hand)
+    switch(getCursorSlot()) {
+    case 0:
+        return armor;
+    case 1:
+        return ranged;
+    case 2:
+        return melee;
+    default:
+        return nullptr;
     }
 }
 
@@ -49,9 +59,21 @@ Item* Equipment::equipItem(Item* newItem)
 Item* Equipment::unequipSelected()
 {
     switch (cursorSlot) {
-    case 0: { Item* old = armor;  armor  = nullptr; return old; }
-    case 1: { Item* old = ranged; ranged = nullptr; return old; }
-    case 2: { Item* old = melee;  melee  = nullptr; return old; }
+    case 0: {
+        Item* old = armor;
+        armor = nullptr;
+        return old;
+    }
+    case 1: {
+        Item* old = ranged;
+        ranged = nullptr;
+        return old;
+    }
+    case 2: {
+        Item* old = melee;
+        melee = nullptr;
+        return old;
+    }
     }
     return nullptr;
 }
@@ -72,6 +94,9 @@ void Equipment::clear()
 
 void Equipment::display(bool active) const
 {
+    // Display character equipment as ASCII art
+    // Uses first letter of equipped item names (A=armor, M=melee, R=ranged)
+    // Selected slot shows with > < brackets instead of [ ] or { }
     auto ch = [](Item* item) -> char {
         if (!item) return ' ';
         return char(std::toupper(item->getName()[0]));
@@ -89,19 +114,17 @@ void Equipment::display(bool active) const
         return res;
     };
 
-    // slot 0 = head  (armor)
-    // slot 1 = left   (ranged)
-    // slot 2 = right  (melee,  right)
+    // Equipment slot layout:
+    // slot 0 = head/armor
+    // slot 1 = left hand/ranged weapon
+    // slot 2 = right hand/melee weapon
     std::string head      = slotStr(0, '[', ']', a);
     std::string leftHand  = slotStr(1, '{', '}', r);
     std::string rightHand = slotStr(2, '{', '}', m);
 
-
-    std::cout << "         " << head                                        << "\n";
+    std::cout << "         " << head << "\n";
     std::cout << "     [" << a << "][" << a << a << a << "][" << a << "]\n";
     std::cout << "     " << leftHand << "[" << a << a << a << "]" << rightHand << "\n";
     std::cout << "        [" << a << "|" << a << "]\n";
     std::cout << "        [" << a << "|" << a << "]\n";
-
-
 }

@@ -1,4 +1,3 @@
-//#include <iostream>
 #include "game.h"
 #define MINIAUDIO_IMPLEMENTATION
 #include "miniaudio.h"
@@ -12,7 +11,7 @@ int main() {
 #endif
     ma_engine engine;
     ma_engine_init(NULL, &engine);
-    ma_engine_play_sound(&engine, "music/music.mp3", NULL);
+    ma_engine_play_sound(&engine, "../../music/music.mp3", NULL);
     Game game;
     game.setPlayerName();
     game.play();
