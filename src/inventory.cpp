@@ -48,15 +48,8 @@ void Inventory::display(Equipment* eq, bool equipMode)
     int baseEnd = 4;
     int smallEnd = hasSmallBackpack ? baseEnd + 1 : baseEnd;
 
-    if (hasSmallBackpack || hasLargeBackpack) {
-        std::cout << "                    ";
-        if (hasSmallBackpack)
-            std::cout << "    SBP ";
-        if (hasLargeBackpack)
-            std::cout << "       BBP    ";
-        std::cout << "\n";
-    }
     for (int i = 0; i < rows; i++) {
+        std::cout << "    ";
         for (int j = 0; j < cols; j++) {
             if (j == baseEnd && hasSmallBackpack)
                 std::cout << "   ";
@@ -79,16 +72,29 @@ void Inventory::display(Equipment* eq, bool equipMode)
         }
         std::cout << "\n";
     }
+    if (hasSmallBackpack && hasLargeBackpack) {
+        std::cout << "                    ";
+        std::cout << "        SBP  ";
+        std::cout << "      BBP";
+    }
+    if(hasSmallBackpack && !hasLargeBackpack){
+        std::cout << "                    ";
+        std::cout << "        SBP";
+    }
+    if(!hasSmallBackpack && hasLargeBackpack){
+        std::cout << "                    ";
+        std::cout << "           BBP";
+    }
     std::cout << "\n";
 
     if (eq)
         eq->display(equipMode);
     else {
-        std::cout << "         [ ]\n";
-        std::cout << "     [ ][   ][ ]\n";
-        std::cout << "     { }[   ]{ }\n";
-        std::cout << "        [ | ]\n";
-        std::cout << "        [ | ]\n";
+        std::cout << "             [ ]\n";
+        std::cout << "         [ ][   ][ ]\n";
+        std::cout << "         { }[   ]{ }\n";
+        std::cout << "            [ | ]\n";
+        std::cout << "            [ | ]\n";
     }
 }
 

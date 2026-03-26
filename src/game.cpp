@@ -55,6 +55,7 @@ const std::string CYAN    = "\033[96m";
 const std::string WHITE   = "\033[97m";
 const std::string BOLD    = "\033[1m";
 const std::string GRAY = "\033[38;5;245m";
+const std::string DARKGRAY = "\033[90m";
 const std::string RESET   = "\033[0m";
 }
 
@@ -285,8 +286,8 @@ Game::Game() {
     menu.add("Music");
     menu.add("Save & Load");
 
-    music.add("Music 1");
-    music.add("Music 2");
+    music.add("Chryzantemy Złociste");
+    music.add("Drink Up, There's More!");
     music.add("Music 3");
     music.add("Music 4");
     music.add("Music 5");
@@ -578,6 +579,7 @@ void Game::startGame() {
             difficulty.move("down");
             break;
         case 10: case 13:
+            music.toggle();
             player->setDiff(difficulty.getCurrentItemName());
             if(player->getDiff() == "Easy"){
                 playEasy();
@@ -589,7 +591,6 @@ void Game::startGame() {
             break;
         }
     }
-
 }
 
 void Game::playHard(){
@@ -650,28 +651,30 @@ bool Game::state_music(){
     music.display();
     userInput = int(getSingleChar());
     switch (userInput) {
-    case 'w': music.move("up"); break;
-    case 's': music.move("down"); break;
+    case 'w':
+        music.move("up");
+        break;
+    case 's':
+        music.move("down");
+        break;
     case 'd':
-        if(music.getVolume() != 100){
-            music.setVolume(music.getVolume()+10);
-        }
+        music.setVolume(music.getVolume() + 10);
         break;
     case 'a':
-        if(music.getVolume() != 0){
-            music.setVolume(music.getVolume()-10);
-        }
+        music.setVolume(music.getVolume() - 10);
         break;
     case 'p':
         music.toggle();
         break;
-    case 10: case 13:
-        music.setCurrentlyPlaying(music.getCurrentItem());
+    case 10:
+    case 13:
+        music.play(music.getCurrentItem());
         break;
     case KEY_BACK:
         state = STATE_MENU;
         break;
     }
+
     return true;
 }
 
@@ -1104,33 +1107,67 @@ bool Game::state_boss_cooldown() {
 
 // ===================== INVENTORY =====================
 bool Game::state_inventory() {
-    std::cout << "<===== " << player->getName() << "'s inventory =====>\n\n";
-    std::cout << "Balance: " << player->getMoney()
-              << " | HP: " << hpColor(player->getHp())
-              << player->getHp() << Color::RESET
-              << "                 ";
+    // std::cout << "<===== " << player->getName() << "'s inventory =====>\n\n";
+    // std::cout << "Balance: " << player->getMoney()
+    //           << " | HP: " << hpColor(player->getHp())
+    //           << player->getHp() << Color::RESET
+    //           << "                 ";
+    auto displayInventoryOverlay = [&]() {
+        system(CLEAR);
+        auto repeat = [](const std::string& s, int n) {
+            std::string result;
+            for (int i = 0; i < n; i++) result += s;
+            return result;
+        };
 
-    if(equipMode){
-        std::cout <<Color::GRAY << " [inventory]  " << Color::RESET << ">[EQUIPMENT]<\n\n";
-    }
-    else{
-        std::cout<< ">[INVENTORY]< " << Color::GRAY<< " [equipment]\n\n" << Color::RESET;
-    }
+        auto c = Color::CYAN;
+        auto b = Color::BOLD;
+        auto r = Color::RESET;
+        auto y = Color::YELLOW;
 
-    player->getInv()->display(player->getEquip(), equipMode);
+        std::string balance = "Balance: " + std::to_string(player->getMoney());
+        std::string hp = "HP: " + std::to_string(player->getHp());
+
+        int total = 27;
+        int freeBalance = total - balance.length();
+        int freeHp = total - hp.length();
+
+        int balanceLeft = freeBalance / 2;
+        int balanceRight = freeBalance - balanceLeft;
+
+        int hpLeft = freeHp / 2;
+        int hpRight = freeHp - hpLeft;
+
+        std::cout << r << c << b <<"╔═══════════════════════════╗\n";
+        std::cout << "║         "<< r << b <<"INVENTORY" << r << c << b <<"         ║\n";
+        std::cout << "║"<<repeat(" ", balanceLeft)<< r <<"Balance: "<< y << b << player->getMoney()<<repeat(" ", balanceRight)<<r<<c<<b<< "║\n";
+        std::cout << "║"<<repeat(" ", hpLeft)<< r <<"HP: "<< hpColor(player->getHp())  << b<< player->getHp() << repeat(" ", hpRight)<< r << c <<b <<"║\n";
+        std::cout << "╚═══════════════════════════╝\n" << r;
+
+        if(equipMode){
+            std::cout <<Color::GRAY << "  [inventory]  " << Color::RESET << ">[EQUIPMENT]<\n";
+        }
+        else{
+            std::cout<< " >[INVENTORY]< " << Color::GRAY<< " [equipment]\n" << Color::RESET;
+        }
+
+        std::cout << Color::DARKGRAY << " ───────────────────────────\n" <<Color::RESET;
+        player->getInv()->display(player->getEquip(), equipMode);
+    };
+    displayInventoryOverlay();
 
     if (showStats) {
-        std::cout << "~~~~~~~~~~~~~~~~~~~\n";
+        std::cout << Color::DARKGRAY << " ───────────────────────────\n" <<Color::RESET;
         displayStats(stats);
     } else if (showInfo) {
-        std::cout << "~~~~~~~~~~~~~~~~~~~\n";
+        std::cout << Color::DARKGRAY << " ───────────────────────────\n" <<Color::RESET;
         if (!equipMode) {
             if (auto item = player->getInv()->getItemOnSelectedRC(
                     player->getInv()->getCurrentRow(),
                     player->getInv()->getCurrentCol())) {
                 item->showInfo();
             } else {
-                std::cout << "Empty slot\n";
+                std::cout << " Empty slot\n";
             }
         } else {
             int s = player->getEquip()->getCursorSlot();
@@ -1155,14 +1192,14 @@ bool Game::state_inventory() {
             ? player->getInv()->getItemOnSelectedRC(player->getInv()->getCurrentRow(), player->getInv()->getCurrentCol())
             : player->getEquip()->getSelectedItem();
         if (item) {
-            std::cout << "~~~~~~~~~~~~~~~~~~~\n";
-            std::cout << "Repair: " << item->getName()
+            std::cout << Color::DARKGRAY << " ───────────────────────────\n" <<Color::RESET;
+            std::cout << " Repair: " << item->getName()
                       << "  " << item->getDurability() << "/100 -> " << repairTarget << "/100"
-                      << "\nPrice: " << repairCost << " coins\n";
+                      << "\n Price: " << repairCost << " coins\n";
             if (player->getMoney() >= repairCost)
                 std::cout << " [R] confirm\n";
             else
-                std::cout << Color::RED << "Not enough coins! ("
+                std::cout << Color::RED << " Not enough coins! ("
                           << player->getMoney() << "/" << repairCost << ")" << Color::RESET << "\n";
         } else {
             repairPending = false;
@@ -1174,14 +1211,14 @@ bool Game::state_inventory() {
             ? player->getInv()->getItemOnSelectedRC(player->getInv()->getCurrentRow(), player->getInv()->getCurrentCol())
             : player->getEquip()->getSelectedItem();
         if (item) {
-            std::cout << "~~~~~~~~~~~~~~~~~~~\n";
-            std::cout << "UPGRADE: " << item->getName()
+            std::cout << Color::DARKGRAY << " ───────────────────────────\n" <<Color::RESET;
+            std::cout << " UPGRADE: " << item->getName()
                       << "  " << upgradeFrom << " -> " << upgradeTo
-                      << "\nPrice: " << upgradeCost << " coins\n";
+                      << "\n Price: " << upgradeCost << " coins\n";
             if (player->getMoney() >= upgradeCost)
                 std::cout << " [P] confirm\n";
             else
-                std::cout << Color::RED << "Not enough coins! ("
+                std::cout << Color::RED << " Not enough coins! ("
                           << player->getMoney() << "/" << upgradeCost << ")" << Color::RESET << "\n";
         } else {
             upgradePending = false;
@@ -1189,13 +1226,15 @@ bool Game::state_inventory() {
     }
 
     if (!medkitMsg.empty()) {
-        std::cout << "~~~~~~~~~~~~~~~~~~~\n";
+        std::cout << Color::DARKGRAY << " ───────────────────────────\n" <<Color::RESET;
         std::cout << medkitMsg << "\n";
     }
 
     if (!lastEvent.empty()) {
-        std::cout << "~~~~~~~~~~~~~~~~~~~\n";
-        std::cout << lastEvent << "\n";
+        if(!lastEvent.find("filters")){
+            std::cout << Color::DARKGRAY << " ───────────────────────────\n" <<Color::RESET;
+            std::cout << lastEvent << "\n";
+        }
     }
 
     std::cout << "\n" << Color::GRAY;
@@ -1298,26 +1337,11 @@ bool Game::state_inventory() {
         break;
 
     case 'f': {
-        auto displayInv = [&]() {
-            system(CLEAR);
-            std::cout << "<===== " << player->getName() << "'s inventory =====>\n\n";
-            std::cout << "Balance: " << player->getMoney()
-                      << " | HP: " << hpColor(player->getHp())
-                      << player->getHp() << Color::RESET << "                 ";
-            if(equipMode){
-                std::cout <<Color::GRAY << " [inventory]  " << Color::RESET << ">[EQUIPMENT]<\n\n";
-            }
-            else{
-                std::cout<< ">[INVENTORY]< " << Color::GRAY<< " [equipment]\n\n" << Color::RESET;
-            }
-            player->getInv()->display(player->getEquip(), equipMode);
-            std::cout << "~~~~~~~~~~~~~~~~~~~\n";
-        };
         bool inRarities = false;
         bool inTypes    = false;
         bool inFilters  = true;
         while (inFilters) {
-            displayInv();
+            displayInventoryOverlay();
             filters.displayFilters();               // TO DOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
             std::cout << Color::GRAY << "\n [W/S] move  [ENTER] select  [BACKSPACE] back\n" << Color::RESET;
             userInput = int(getSingleChar());
@@ -1327,14 +1351,14 @@ bool Game::state_inventory() {
             case 10: case 13: {
                 if (filters.getCurrentItem() == 0) {
                     std::string target;
-                    displayInv();
-                    std::cout << "Search an item in your inventory: ";
+                    displayInventoryOverlay();
+                    std::cout << " Search an item in your inventory: ";
                     while (std::cin.peek() == '\n') std::cin.ignore();
                     std::getline(std::cin, target);
                     auto [givenRow, givenCol] = player->getInv()->searchNames(target);
                     if (givenRow == -1 && givenCol == -1) {
-                        displayInv();
-                        std::cout << "Item '" << target << "' not found in inventory :(";
+                        displayInventoryOverlay();
+                        std::cout << " Item '" << target << "' not found in inventory :(";
                         getSingleChar();
                     } else {
                         player->getInv()->setCurrentRow(givenRow);
@@ -1371,8 +1395,8 @@ bool Game::state_inventory() {
                     inTypes = true;
                     types.setCurrentItem(0);
                     while (inTypes) {
-                        displayInv();
-                        std::cout << "~~~~~~~~~~~~~~~~~~~\n";
+                        displayInventoryOverlay();
+                        std::cout << Color::DARKGRAY << " ───────────────────────────\n" <<Color::RESET;
                         std::cout << "Filter by type:\n";
                         types.displayFilters();
                         std::cout << Color::GRAY << "\n [W/S] move  [ENTER] select  [BACKSPACE] back\n" << Color::RESET;
@@ -1404,8 +1428,8 @@ bool Game::state_inventory() {
                     inRarities = true;
                     rarities.setCurrentItem(0);
                     while (inRarities) {
-                        displayInv();
-                        std::cout << "~~~~~~~~~~~~~~~~~~~\n";
+                        displayInventoryOverlay();
+                        std::cout << Color::DARKGRAY << " ───────────────────────────\n" <<Color::RESET;
                         std::cout << "Filter by rarity:\n";
                         rarities.displayFilters();
                         std::cout << Color::GRAY << "\n [W/S] move  [ENTER] select  [BACKSPACE] back\n" << Color::RESET;
@@ -1465,16 +1489,44 @@ bool Game::state_inventory() {
         bool movingItem = true;
         while (movingItem) {
             system(CLEAR);
-            std::cout << "<===== " << player->getName() << "'s inventory =====>\n\n";
-            std::cout << "Balance: " << player->getMoney()
-                      << " | HP: " << hpColor(player->getHp())
-                      << player->getHp() << Color::RESET << "                 ";
+            auto repeat = [](const std::string& s, int n) {
+                std::string result;
+                for (int i = 0; i < n; i++) result += s;
+                return result;
+            };
+
+            auto c = Color::CYAN;
+            auto b = Color::BOLD;
+            auto r = Color::RESET;
+            auto y = Color::YELLOW;
+
+            std::string balance = "Balance: " + std::to_string(player->getMoney());
+            std::string hp = "HP: " + std::to_string(player->getHp());
+
+            int total = 27;
+            int freeBalance = total - balance.length();
+            int freeHp = total - hp.length();
+
+            int balanceLeft = freeBalance / 2;
+            int balanceRight = freeBalance - balanceLeft;
+
+            int hpLeft = freeHp / 2;
+            int hpRight = freeHp - hpLeft;
+
+            std::cout << r << c << b <<"╔═══════════════════════════╗\n";
+            std::cout << "║         "<< r << b <<"INVENTORY" << r << c << b <<"         ║\n";
+            std::cout << "║"<<repeat(" ", balanceLeft)<< r <<"Balance: "<< y << b << player->getMoney()<<repeat(" ", balanceRight)<<r<<c<<b<< "║\n";
+            std::cout << "║"<<repeat(" ", hpLeft)<< r <<"HP: "<< hpColor(player->getHp())  << b<< player->getHp() << repeat(" ", hpRight)<< r << c <<b <<"║\n";
+            std::cout << "╚═══════════════════════════╝\n" << r;
+
             if(equipMode){
-                std::cout <<Color::GRAY << " [inventory]  " << Color::RESET << ">[EQUIPMENT]<\n\n";
+                std::cout <<Color::GRAY << "  [inventory]  " << Color::RESET << ">[EQUIPMENT]<\n";
             }
             else{
-                std::cout<< ">[INVENTORY]< " << Color::GRAY<< " [equipment]\n\n" << Color::RESET;
+                std::cout<< " >[INVENTORY]< " << Color::GRAY<< " [equipment]\n" << Color::RESET;
             }
+
+            std::cout << Color::DARKGRAY << " ───────────────────────────\n" <<Color::RESET;
 
             int  curRow     = playerInv->getCurrentRow();
             int  curCol     = playerInv->getCurrentCol();
@@ -1745,9 +1797,7 @@ bool Game::state_inventory() {
 
 // ===================== SHOP (buy) =====================
 bool Game::state_store_shop() {
-    std::cout << "<===== Shop =====>\n\n";
-    std::cout << "Your current balance: " << player->getMoney() << "\n";
-    shop->display();
+    shop->displayShop(player->getMoney());
 
     userInput = int(getSingleChar());
     switch (userInput) {
@@ -1821,9 +1871,30 @@ bool Game::state_store_shop() {
 // ===================== SELL =====================
 bool Game::state_store_sell() {
     system(CLEAR);
-    std::cout << "<===== Sell =====>\n\n";
-    std::cout << "Balance: " << player->getMoney() << "\n\n";
+    auto repeat = [](const std::string& s, int n) {
+        std::string result;
+        for (int i = 0; i < n; i++) result += s;
+        return result;
+    };
+    std::string balance = "Balance: " +std::to_string(player->getMoney());
+    int total = 27;
+    int totalleft = total - balance.length();
+    int left = totalleft / 2;
+    int right = totalleft - left;
 
+    std::cout << Color::BOLD <<Color::CYAN << "╔═══════════════════════════╗\n";
+    std::cout << "║      " << Color::RESET << Color::BOLD
+              << "SELL YOUR ITEMS" << Color::RESET << Color::CYAN << Color::BOLD
+              << "      ║\n";
+
+    std::cout << "║"
+              << repeat(" ", left)
+              << Color::RESET << "Balance: " << Color::YELLOW << Color::BOLD << player->getMoney() << Color::RESET
+              << Color::CYAN << Color::BOLD
+              << repeat(" ", right)
+              << "║\n";
+
+    std::cout << "╚═══════════════════════════╝\n\n" << Color::RESET;
     struct SellEntry {
         Item* item;
         bool  equipped;
@@ -1849,7 +1920,7 @@ bool Game::state_store_sell() {
         sellList.push_back({player->getEquip()->getMelee(),  true, 3, -1, -1});
 
     if (sellList.empty()) {
-        std::cout << "No items to sell.\n\n";
+        std::cout << " No items to sell.\n\n";
         std::cout << Color::GRAY << " [BACKSPACE] back\n" << Color::RESET;
         userInput = int(getSingleChar());
         if (userInput == KEY_BACK) {
@@ -1867,6 +1938,7 @@ bool Game::state_store_sell() {
     int rows = (totalItems + SELL_COLS - 1) / SELL_COLS;
 
     for (int i = 0; i < rows; i++) {
+        std::cout << " ";
         for (int j = 0; j < SELL_COLS; j++) {
             int idx = i * SELL_COLS + j;
             if (idx >= totalItems) { std::cout << "     "; continue; }
@@ -1879,13 +1951,13 @@ bool Game::state_store_sell() {
         std::cout << "\n";
     }
 
-    std::cout << "~~~~~~~~~~~~~~~~~~~\n";
+    std::cout << Color::DARKGRAY << " ────────────────────────────\n" <<Color::RESET;
     Item* sel = sellList[sellCursor].item;
     sel->showInfo();
-    std::cout << "Sell price: " << calculateSellPrice(sel) << " coins\n\n";
+    std::cout << " Sell price: " << calculateSellPrice(sel) << " coins\n\n";
 
     if (sellPending)
-        std::cout << "[S] confirm\n";
+        std::cout << " [S] confirm\n";
     else
         std::cout << Color::GRAY << " [A/D] move  [S] sell  [BACKSPACE] back\n" << Color::RESET;
 
@@ -1989,7 +2061,10 @@ bool Game::state_navigation() {
 
 // ===================== SAVE =====================
 bool Game::state_save() {
-    std::cout << "<===== Save or load your game! =====>\n\n~~~~~~~~~~~~~\n";
+    std::cout << Color::CYAN  << Color::BOLD<< "╔════════════════════════════╗\n";
+    std::cout << "║   "<< Color::RESET << Color::BOLD <<"SAVE OR LOAD YOUR GAME"<<Color::RESET << Color::CYAN << Color::BOLD <<"   ║\n";
+    std::cout << "╚════════════════════════════╝\n"<< Color::RESET;
+    std::cout << Color::DARKGRAY << " ────────────────────────────\n\n" <<Color::RESET;
     saves.displayFilters();
     std::cout << "\n\n\n";
 
