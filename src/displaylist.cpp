@@ -200,12 +200,19 @@ void DisplayList::displayMenu(const std::string& playerName, const std::string& 
 void DisplayList::displayFilters()
 {
     for(int i = 0; i < names.size(); i++) {
-        if(currentItem == i) {
-            std::cout << " > ";
-        } else {
-            std::cout << " ";
+        if(i == currentItem){
+            std::cout << Color::BOLD << Color::WHITE << "  >  " << Color::RESET;
         }
-        std::cout << names[i] << "\n";
+        else{
+            std::cout << "     ";
+        }
+        if(i == currentItem){
+            std::cout << Color::BOLD << Color::WHITE << names[i] << Color::RESET;
+        }
+        else{
+            std::cout << names[i];
+        }
+        std::cout << std::endl;
     }
 }
 

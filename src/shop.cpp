@@ -2,10 +2,17 @@
 #include <iomanip>
 
 namespace Color {
-const std::string GRAY = "\033[38;5;245m";
-const std::string RESET   = "\033[0m";
+const std::string RED     = "\033[91m";
+const std::string GREEN   = "\033[92m";
+const std::string YELLOW  = "\033[93m";
+const std::string BLUE    = "\033[38;5;75m";
+const std::string MAGENTA = "\033[95m";
+const std::string CYAN    = "\033[96m";
 const std::string WHITE   = "\033[97m";
 const std::string BOLD    = "\033[1m";
+const std::string GRAY = "\033[38;5;245m";
+const std::string DARKGRAY = "\033[90m";
+const std::string RESET   = "\033[0m";
 }
 
 Shop::Shop() : GridBase(15, 1) {}
@@ -37,16 +44,47 @@ void Shop::displayTemplate(std::string cat)
     }
 }
 
+void Shop::displayShop(int playerBalance)
+{
+    auto repeat = [](const std::string& s, int n) {
+        std::string result;
+        for (int i = 0; i < n; i++) result += s;
+        return result;
+    };
+    std::string balance = "Balance: " +std::to_string(playerBalance);
+    int total = 27;
+    int totalleft = total - balance.length();
+    int left = totalleft / 2;
+    int right = totalleft - left;
+
+    std::cout << Color::CYAN <<Color::BOLD<< "╔═══════════════════════════╗\n";
+    std::cout << "║       " << Color::RESET << Color::BOLD
+              << "BUY NEW ITEMS" << Color::RESET << Color::CYAN << Color::BOLD
+              << "       ║\n";
+
+    std::cout << "║"
+              << repeat(" ", left)
+              << Color::RESET << "Balance: " << Color::YELLOW << Color::BOLD << playerBalance << Color::RESET
+              << Color::CYAN << Color::BOLD
+              << repeat(" ", right)
+              << "║\n";
+
+    std::cout << "╚═══════════════════════════╝\n" << Color::RESET;
+
+
+    std::cout << Color::GRAY << "\n[ CLOSE RANGE WEAPONS ]\n" << Color::RESET;
+    displayTemplate("close range weapons");
+    std::cout << Color::GRAY << "\n[ LONG RANGE WEAPONS ]\n" << Color::RESET;
+    displayTemplate("long range weapons");
+    std::cout << Color::GRAY << "\n[ DEFENSIVE EQUIPMENT ]\n" << Color::RESET;
+    displayTemplate("armor");
+    std::cout << Color::GRAY << "\n[ MEDKITS ]\n" << Color::RESET;
+    displayTemplate("medkit");
+    std::cout<< Color::GRAY << "\n[ BACKPACKS ]\n" << Color::RESET;
+    displayTemplate("backpack");
+}
+
 void Shop::display()
 {
-    std::cout << "~~~~~~~~~~~~~\nClose range weapons:\n";
-    displayTemplate("close range weapons");
-    std::cout << "~~~~~~~~~~~~~\nLong range weapons:\n";
-    displayTemplate("long range weapons");
-    std::cout << "~~~~~~~~~~~~~\nDefensive equipment:\n";
-    displayTemplate("armor");
-    std::cout << "~~~~~~~~~~~~~\nFirst aid kits:\n";
-    displayTemplate("medkit");
-    std::cout << "~~~~~~~~~~~~~\nBackpacks:\n";
-    displayTemplate("backpack");
+    std::cout << "";
 }

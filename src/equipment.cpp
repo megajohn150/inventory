@@ -122,9 +122,9 @@ void Equipment::display(bool active) const
     std::string leftHand  = slotStr(1, '{', '}', r);
     std::string rightHand = slotStr(2, '{', '}', m);
 
-    std::cout << "         " << head << "\n";
-    std::cout << "     [" << a << "][" << a << a << a << "][" << a << "]\n";
-    std::cout << "     " << leftHand << "[" << a << a << a << "]" << rightHand << "\n";
-    std::cout << "        [" << a << "|" << a << "]\n";
-    std::cout << "        [" << a << "|" << a << "]\n";
+    std::cout << "             " << head << "\n";
+    std::cout << "         [" << a << "][" << a << a << a << "][" << a << "]\n";
+    std::cout << "         " << leftHand << "[" << a << a << a << "]" << rightHand << "\n";
+    std::cout << "            [" << a << "|" << a << "]\n";
+    std::cout << "            [" << a << "|" << a << "]\n";
 }

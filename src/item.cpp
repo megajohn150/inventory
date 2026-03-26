@@ -152,15 +152,15 @@ void Item::use()
 void Item::showInfo()
 {
     if(category != "medkit"){
-    std::cout << "Item - " << Item::getTypeString() << " " <<this->name << " (" << rarityColor(Item::getRarity()) << Item::getRarityString()<<Color::RESET<<")" << "\n";
-    std::cout << "Price - " << this->price << "\n";
-    std::cout << "Durability - " << durabilityColor(this->durability)
+    std::cout << " Item - " << Item::getTypeString() << " " <<this->name << " (" << rarityColor(Item::getRarity()) << Item::getRarityString()<<Color::RESET<<")" << "\n";
+    std::cout << " Price - " << this->price << "\n";
+    std::cout << " Durability - " << durabilityColor(this->durability)
               << this->durability << Color::RESET<< "/100"  << "\n";
     }
     else {
-        std::cout << "Item - " << medkitColor(this->name) << this->name << Color::RESET
+        std::cout << " Item - " << medkitColor(this->name) << this->name << Color::RESET
                   << " (heals " << (this->name == "Small First-Aid kit" ? " 40 HP" : this->name == "Medium First-Aid kit" ? " 60 HP" : "to full HP") << ")" << "\n";
-        std::cout << "Price - " << this->price << "\n";
+        std::cout << " Price - " << this->price << "\n";
     }
 }
 

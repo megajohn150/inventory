@@ -7,6 +7,7 @@ class Shop : public GridBase
 {
 public:
     Shop();
+    void displayShop(int playerBalance);
     void display() override;
     void displayTemplate(std::string cat);
 private:
