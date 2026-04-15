@@ -1,6 +1,11 @@
 #include "displaylist.h"
 #include <iostream>
+#ifdef _WIN32
+#include <windows.h>
+#include <winioctl.h>
+#else
 #include <sys/ioctl.h>
+#endif
 #include <unistd.h>
 namespace Color {
 const std::string RED     = "\033[91m";
@@ -48,7 +53,7 @@ void DisplayList::add(std::string name)
     names.push_back(name);
 }
 
-#include <sys/ioctl.h>
+//#include <sys/ioctl.h>
 
 // void DisplayList::displayMenu(const std::string& playerName, const std::string& difficulty)
 // {
