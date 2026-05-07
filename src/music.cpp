@@ -154,7 +154,7 @@ void Music::display(){
               << color << volume << Color::GRAY << "/100\n\n";
 
     std::cout << Color::RESET << Color::GRAY
-              << " [ENTER] play  [A/D] adjust volume  [P] pause/resume  [DELETE] back\n\n"
+              << " [ENTER] play | [A/D] adjust volume | [P] pause/resume | [DELETE] back\n\n"
               << Color::RESET;
 }
 
