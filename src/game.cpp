@@ -55,10 +55,14 @@ const std::string CYAN    = "\033[96m";
 const std::string WHITE   = "\033[97m";
 const std::string BOLD    = "\033[1m";
 const std::string GRAY = "\033[38;5;245m";
+const std::string DARKERGRAY = "\033[38;5;242m";
 const std::string DARKGRAY = "\033[90m";
 const std::string RESET   = "\033[0m";
 }
 
+static const std::string SAVE_FILE = "savegame.json";
+
+// ===================== HELPERS =====================
 
 static nlohmann::json serializeItem(Item* item) {
     if (!item) return nullptr;
@@ -83,24 +87,63 @@ static Item* deserializeItem(const nlohmann::json& j) {
     return item;
 }
 
-bool Game::saveGame(const std::string& filename) {
-    saveLoadMSG = "";
+// Load the root saves JSON (array of user saves). Returns empty array if file missing/corrupt.
+static nlohmann::json loadAllSaves() {
+    std::ifstream file(SAVE_FILE);
+    if (!file.is_open()) return nlohmann::json::array();
     nlohmann::json j;
-    // Player fields
-    j["player"]["name"]  = player->getName();
-    j["player"]["money"] = player->getMoney();
-    j["player"]["hp"]    = player->getHp();
-    j["player"]["lvl"]   = player->getLvl();
-    j["player"]["exp"]   = player->getExp();
-    j["player"]["diff"]  = player->getDiff();
-    // Backpacks
-    j["player"]["hasSmallBackpack"] = player->getInv()->getHasSmallBackpack();
-    j["player"]["hasLargeBackpack"] = player->getInv()->getHasLargeBackpack();
-    // Inventory cursor position
-    j["player"]["invCurrentRow"] = player->getInv()->getCurrentRow();
-    j["player"]["invCurrentCol"] = player->getInv()->getCurrentCol();
-    // Inventory
-    j["player"]["inventory"] = nlohmann::json::array();
+    try {
+        file >> j;
+        if (!j.is_array()) return nlohmann::json::array();
+    } catch (...) {
+        return nlohmann::json::array();
+    }
+    return j;
+}
+
+static bool writeAllSaves(const nlohmann::json& all) {
+    std::ofstream file(SAVE_FILE);
+    if (!file.is_open()) return false;
+    file << all.dump(4);
+    return true;
+}
+
+// Returns list of saved player names.
+static std::vector<std::string> getSavedNames() {
+    auto all = loadAllSaves();
+    std::vector<std::string> names;
+    for (auto& entry : all) {
+        if (entry.contains("player") && entry["player"].contains("name"))
+            names.push_back(entry["player"]["name"].get<std::string>());
+    }
+    return names;
+}
+
+static bool nameExistsInSaves(const std::string& name) {
+    auto names = getSavedNames();
+    for (auto& n : names)
+        if (n == name) return true;
+    return false;
+}
+
+// ===================== SAVE / LOAD =====================
+
+bool Game::saveGame(const std::string& /*filename*/) {
+    saveLoadMSG = "";
+
+    nlohmann::json entry;
+    entry["player"]["name"]  = player->getName();
+    entry["player"]["money"] = player->getMoney();
+    entry["player"]["hp"]    = player->getHp();
+    entry["player"]["lvl"]   = player->getLvl();
+    entry["player"]["exp"]   = player->getExp();
+    entry["player"]["diff"]  = player->getDiff();
+    entry["player"]["hasSmallBackpack"] = player->getInv()->getHasSmallBackpack();
+    entry["player"]["hasLargeBackpack"] = player->getInv()->getHasLargeBackpack();
+    entry["player"]["invCurrentRow"] = player->getInv()->getCurrentRow();
+    entry["player"]["invCurrentCol"] = player->getInv()->getCurrentCol();
+
+    entry["player"]["inventory"] = nlohmann::json::array();
     for (int i = 0; i < player->getInv()->getRows(); i++) {
         for (int k = 0; k < player->getInv()->getCols(); k++) {
             Item* item = player->getInv()->getItems()[i][k];
@@ -108,82 +151,98 @@ bool Game::saveGame(const std::string& filename) {
             slot["row"]  = i;
             slot["col"]  = k;
             slot["item"] = serializeItem(item);
-            j["player"]["inventory"].push_back(slot);
+            entry["player"]["inventory"].push_back(slot);
         }
     }
-    // Shop stock
-    j["shop"] = nlohmann::json::array();
+
+    entry["shop"] = nlohmann::json::array();
     for (int i = 0; i < shop->getRows(); i++) {
         Item* it = shop->getItems()[i][0];
-        if (it) {
-            j["shop"].push_back({{"name", it->getName()}, {"stock", it->getStock()}});
+        if (it)
+            entry["shop"].push_back({{"name", it->getName()}, {"stock", it->getStock()}});
+    }
+
+    entry["stats"]["clicks"]        = stats.clicks;
+    entry["stats"]["zombiesKilled"] = stats.zombiesKilled;
+    entry["stats"]["zombiesHit"]    = stats.zombiesHit;
+    entry["stats"]["coinsEarned"]   = stats.coinsEarned;
+    entry["stats"]["coinsStolen"]   = stats.coinsStolen;
+    entry["stats"]["hpHealed"]      = stats.hpHealed;
+    entry["stats"]["medkitsUsed"]   = stats.medkitsUsed;
+    entry["stats"]["itemsBroken"]   = stats.itemsBroken;
+    entry["stats"]["upgrades"]      = stats.upgrades;
+    entry["stats"]["repairs"]       = stats.repairs;
+    entry["stats"]["itemsSold"]     = stats.itemsSold;
+    entry["stats"]["itemsBought"]   = stats.itemsBought;
+    entry["stats"]["bossFightsWon"] = stats.bossFightsWon;
+
+    entry["player"]["equipment"]["armor"]  = serializeItem(player->getEquip()->getArmor());
+    entry["player"]["equipment"]["melee"]  = serializeItem(player->getEquip()->getMelee());
+    entry["player"]["equipment"]["ranged"] = serializeItem(player->getEquip()->getRanged());
+
+    entry["secretFlags"]["used"]  = used;
+    entry["secretFlags"]["used2"] = used2;
+    entry["secretFlags"]["used3"] = used3;
+
+    // Insert or replace this user's entry
+    nlohmann::json all = loadAllSaves();
+    std::string myName = player->getName();
+    bool found = false;
+    for (auto& e : all) {
+        if (e.contains("player") && e["player"]["name"].get<std::string>() == myName) {
+            e = entry;
+            found = true;
+            break;
         }
     }
-    // Stats
-    j["stats"]["clicks"]        = stats.clicks;
-    j["stats"]["zombiesKilled"] = stats.zombiesKilled;
-    j["stats"]["zombiesHit"]    = stats.zombiesHit;
-    j["stats"]["coinsEarned"]   = stats.coinsEarned;
-    j["stats"]["coinsStolen"]   = stats.coinsStolen;
-    j["stats"]["hpHealed"]      = stats.hpHealed;
-    j["stats"]["medkitsUsed"]   = stats.medkitsUsed;
-    j["stats"]["itemsBroken"]   = stats.itemsBroken;
-    j["stats"]["upgrades"]      = stats.upgrades;
-    j["stats"]["repairs"]       = stats.repairs;
-    j["stats"]["itemsSold"]     = stats.itemsSold;
-    j["stats"]["itemsBought"]   = stats.itemsBought;
-    j["stats"]["bossFightsWon"] = stats.bossFightsWon;
-    // Equipment
-    j["player"]["equipment"]["armor"]  = serializeItem(player->getEquip()->getArmor());
-    j["player"]["equipment"]["melee"]  = serializeItem(player->getEquip()->getMelee());
-    j["player"]["equipment"]["ranged"] = serializeItem(player->getEquip()->getRanged());
-    // Secret code one-time use flags
-    j["secretFlags"]["used"]  = used;
-    j["secretFlags"]["used2"] = used2;
-    j["secretFlags"]["used3"] = used3;
+    if (!found) all.push_back(entry);
 
-    std::ofstream file(filename);
-    if (file.is_open()) {
-        file << j.dump(4);
-        saveLoadMSG = "Saved successfully!\n";
+    if (writeAllSaves(all)) {
+        saveLoadMSG = "Saved your game successfully!\n";
         return true;
-    }
-    else{
-        saveLoadMSG = "Unable to write save, file not found!\n";
+    } else {
+        saveLoadMSG = "Unable to write save file!\n";
         return false;
     }
 }
 
-bool Game::loadGame(const std::string& filename){
+bool Game::loadGame(const std::string& /*filename*/) {
     saveLoadMSG = "";
-    std::ifstream file(filename);
-    if(!file.is_open()){
-        saveLoadMSG = "Something went wrong, file wasn't saved!\n";
-        return false;
-    }
+    // This overload is not used directly anymore; loading by name is done via loadGameForUser.
+    return loadGameForUser(player->getName());
+}
+
+bool Game::loadGameForUser(const std::string& userName) {
+    saveLoadMSG = "";
+    nlohmann::json all = loadAllSaves();
     nlohmann::json j;
-    try{
-        file >> j;
+    bool found = false;
+    for (auto& e : all) {
+        if (e.contains("player") && e["player"]["name"].get<std::string>() == userName) {
+            j = e;
+            found = true;
+            break;
+        }
     }
-    catch(...){
-        saveLoadMSG = "Unable to load game! File is corrupted!\n";
+    if (!found) {
+        saveLoadMSG = "No save found for player '" + userName + "'.\n";
         return false;
     }
-    // Restore player fields
+
     player->setName(j["player"]["name"]);
     player->setMoney(j["player"]["money"]);
     player->setHp(j["player"]["hp"]);
     if (j["player"].contains("lvl"))  player->setLvl(j["player"]["lvl"].get<int>());
     if (j["player"].contains("exp"))  player->setExp(j["player"]["exp"].get<int>());
     if (j["player"].contains("diff")) player->setDiff(j["player"]["diff"].get<std::string>());
-    // Clear current state
+
     player->getInv()->clearInv(player->getEquip());
-    // Restore backpacks
+
     if (j["player"]["hasSmallBackpack"].get<bool>())
         player->getInv()->addSmallBackpack();
     if (j["player"]["hasLargeBackpack"].get<bool>())
         player->getInv()->addLargeBackpack();
-    // Restore inventory
+
     for (auto& slot : j["player"]["inventory"]) {
         if (!slot["item"].is_null()) {
             Item* item = deserializeItem(slot["item"]);
@@ -192,12 +251,12 @@ bool Game::loadGame(const std::string& filename){
             player->getInv()->getItems()[row][col] = item;
         }
     }
-    // Restore inventory cursor position
+
     if (j["player"].contains("invCurrentRow"))
         player->getInv()->setCurrentRow(j["player"]["invCurrentRow"].get<int>());
     if (j["player"].contains("invCurrentCol"))
         player->getInv()->setCurrentCol(j["player"]["invCurrentCol"].get<int>());
-    // Restore shop stock
+
     if (j.contains("shop")) {
         for (auto& entry : j["shop"]) {
             std::string name = entry["name"];
@@ -211,7 +270,7 @@ bool Game::loadGame(const std::string& filename){
             }
         }
     }
-    // Restore stats
+
     if (j.contains("stats")) {
         stats.clicks        = j["stats"]["clicks"];
         stats.zombiesKilled = j["stats"]["zombiesKilled"];
@@ -227,22 +286,40 @@ bool Game::loadGame(const std::string& filename){
         stats.itemsBought   = j["stats"]["itemsBought"];
         stats.bossFightsWon = j["stats"].value("bossFightsWon", 0);
     }
-    // Restore equipment
+
     if (!j["player"]["equipment"]["armor"].is_null())
         player->getEquip()->equipItem(deserializeItem(j["player"]["equipment"]["armor"]));
     if (!j["player"]["equipment"]["melee"].is_null())
         player->getEquip()->equipItem(deserializeItem(j["player"]["equipment"]["melee"]));
     if (!j["player"]["equipment"]["ranged"].is_null())
         player->getEquip()->equipItem(deserializeItem(j["player"]["equipment"]["ranged"]));
-    // Restore secret code one-time use flags
+
     if (j.contains("secretFlags")) {
         used  = j["secretFlags"].value("used",  false);
         used2 = j["secretFlags"].value("used2", false);
         used3 = j["secretFlags"].value("used3", false);
     }
+
     saveLoadMSG = "Welcome back, " + player->getName();
     return true;
 }
+
+bool Game::deleteSaveForUser(const std::string& userName) {
+    nlohmann::json all = loadAllSaves();
+    nlohmann::json updated = nlohmann::json::array();
+    bool found = false;
+    for (auto& e : all) {
+        if (e.contains("player") && e["player"]["name"].get<std::string>() == userName) {
+            found = true;
+        } else {
+            updated.push_back(e);
+        }
+    }
+    if (!found) return false;
+    return writeAllSaves(updated);
+}
+
+// ===================== STATS =====================
 
 static void displayStats(const Stats& s) {
     std::cout << "<===== Statistics =====>\n\n";
@@ -300,7 +377,6 @@ Game::Game() {
     this->player = new Player();
     this->shop   = new Shop();
 
-
     menu.add("Play");
     menu.add("Inventory");
     menu.add("Shop");
@@ -308,7 +384,7 @@ Game::Game() {
     menu.add("Map");
     menu.add("Guide");
     menu.add("Music");
-    menu.add("Save & Load");
+    menu.add("Save game");
 
     music.add("Ancient harp");
     music.add("Castle exploration");
@@ -317,8 +393,6 @@ Game::Game() {
     music.add("Habitat");
     music.add("Smooth waters");
 
-    saves.add("Save game");
-    saves.add("Load game");
 
     filters.add("Search item");
     filters.add("Clean up");
@@ -379,8 +453,6 @@ Game::~Game() {
     delete this->shop;
 }
 
-
-
 static Item* pickActiveWeapon(Item* melee, Item* ranged) {
     if (melee && ranged) {
         int meleeScore  = melee->getType()  * 10 + melee->getRarity();
@@ -389,7 +461,6 @@ static Item* pickActiveWeapon(Item* melee, Item* ranged) {
     }
     return melee ? melee : ranged;
 }
-
 
 static int baseEarnByName(const std::string& name) {
     if (name == "Sword")    return 2;
@@ -543,6 +614,7 @@ static void displayPlayHeader(Player* player, Item* activeWeapon, const std::str
     if (!lastEvent.empty())
         std::cout << "\n" << lastEvent << "\n";
 }
+
 static Item* findBestWeaponInInventory(Player* player) {
     Item* best = nullptr;
     float bestScore = -1.0f;
@@ -563,65 +635,213 @@ static Item* findBestWeaponInInventory(Player* player) {
 }
 #ifdef __APPLE__
 #define KEY_BACK 127
+#define KEY_BACK_STR "DELETE"
 #else
 #define KEY_BACK 8
+#define KEY_BACK_STR "BACKSPACE"
 #endif
+
+// ===================== START GAME =====================
 
 void Game::startGame() {
     std::string name;
     const int MAX = 14;
-    system(CLEAR);
-    std::cout << "Welcome, to start the game, please input your nickname: ";
 
+    // Show main entry screen: new game or load
     while (true) {
+        system(CLEAR);
+        std::cout << Color::CYAN << Color::BOLD
+                  << "╔═══════════════════════════╗\n"
+                  << "║         " << Color::WHITE<<"MAIN MENU"<<Color::CYAN<<"         ║\n"
+                  << "╚═══════════════════════════╝\n" << Color::RESET << "\n";
+        std::cout << " [N] New game\n";
+        std::cout << " [L] Load game\n\n";
+        std::cout << " Choose: ";
+
         int c = getSingleChar();
 
-        if (c == 10 || c == 13) {
-            if (!name.empty()) break;
-        } else if (c == 127 || c == 8) {
-            if (!name.empty()) {
-                name.pop_back();
-                std::cout << "\b \b" << std::flush;
+        if (c == 'n' || c == 'N') {
+            // ---- NEW GAME: pick a name ----
+            name = "";
+            bool nameOk = false;
+            while (!nameOk) {
+                system(CLEAR);
+                std::cout << "Enter your nickname: ";
+                name = "";
+                // Print prompt fresh
+                while (true) {
+                    int ch = getSingleChar();
+                    if (ch == 10 || ch == 13) {
+                        if (!name.empty()) break;
+                    } else if (ch == 127 || ch == 8) {
+                        if (!name.empty()) {
+                            name.pop_back();
+                            std::cout << "\b \b" << std::flush;
+                        }
+                    } else if (ch >= 32 && ch < 127) {
+                        if ((int)name.size() < MAX) {
+                            name += (char)ch;
+                            std::cout << (char)ch << std::flush;
+                        }
+                    }
+                }
+
+                // Check name conflict
+                if (nameExistsInSaves(name)) {
+                    system(CLEAR);
+                    std::cout << Color::RED << " Name '" << name << "' is already taken by a saved player.\n"
+                              << " Please choose a different name.\n" << Color::RESET;
+                    std::cout << "\n Press any key to try again...";
+                    getSingleChar();
+                } else {
+                    nameOk = true;
+                }
             }
-        } else if (c >= 32 && c < 127) {
-            if ((int)name.size() < MAX) {
-                name += (char)c;
-                std::cout << (char)c << std::flush;
+
+            this->player->setName(name);
+
+            // Difficulty selection
+            bool inLoop = true;
+            while (inLoop) {
+                system(CLEAR);
+                std::cout << "Welcome " << name << ", choose difficulty (not changeable):\n\n";
+                difficulty.displayDiff();
+                std::cout << "\n\n\n\n\n\n";
+                int userInput = getSingleChar();
+                switch (userInput) {
+                case 'w':
+                    difficulty.move("up");
+                    break;
+                case 's':
+                    difficulty.move("down");
+                    break;
+                case 10: case 13:
+                    music.toggle();
+                    player->setDiff(difficulty.getCurrentItemName());
+                    if(player->getDiff() == "Easy"){
+                        playEasy();
+                    }
+                    else{
+                        playEasy();
+                    }
+                    inLoop = false;
+                    break;
+                }
             }
+            return;
+
+        } else if (c == 'l' || c == 'L') {
+            // ---- LOAD GAME: show save list ----
+            state_load_select();
+            return;
         }
     }
-    this->player->setName(name);
-    bool inLoop = true;
-    while (inLoop) {
+}
+
+// ===================== LOAD SELECT SCREEN =====================
+
+void Game::state_load_select() {
+    int cursor = 0;
+    bool deleteMode = false;
+
+    while (true) {
         system(CLEAR);
-        std::cout << "Welcome " << name << ", at what difficulty would you like to start your game? (not changeable)\n\n";
-        difficulty.displayDiff();
-        std::cout << "\n\n\n\n\n\n";
-        int userInput = getSingleChar();
-        switch (userInput) {
-        case 'w':
-            difficulty.move("up");
-            break;
-        case 's':
-            difficulty.move("down");
-            break;
-        case 10: case 13:
-            music.toggle();
-            player->setDiff(difficulty.getCurrentItemName());
-            if(player->getDiff() == "Easy"){
-                playEasy();
+        std::vector<std::string> names = getSavedNames();
+
+        std::cout << Color::CYAN << Color::BOLD
+                  << "╔═══════════════════════════╗\n"
+                  << "║         " << Color::WHITE<<"LOAD GAME"<<Color::CYAN<<"         ║\n"
+                  << "╚═══════════════════════════╝\n" << Color::RESET << "\n";
+
+        if (names.empty()) {
+            std::cout << " No saved games found.\n\n";
+            std::cout << Color::GRAY << " ["<<KEY_BACK_STR<<"] back\n" << Color::RESET;
+            int ch = getSingleChar();
+            if (ch == KEY_BACK) {
+                startGame();
+                return;
             }
-            else{
-                playEasy();
+            continue;
+        }
+
+        if (cursor >= (int)names.size()) cursor = (int)names.size() - 1;
+        if (cursor < 0) cursor = 0;
+
+        for (int i = 0; i < (int)names.size(); i++) {
+            if (i == cursor)
+                std::cout << Color::YELLOW << Color::BOLD << " > " << names[i] << Color::RESET << "\n";
+            else
+                std::cout << "   " << names[i] << "\n";
+        }
+
+        std::cout << "\n" << Color::GRAY;
+        if (deleteMode)
+            std::cout << " [ENTER] confirm delete | [X] cancel delete\n";
+        else
+            std::cout << " [W/S] move | [ENTER] load | [X] delete | ["<<KEY_BACK_STR<<"] back\n";
+        std::cout << Color::RESET;
+
+        if (deleteMode)
+            std::cout << Color::RED << "\n Delete '" << names[cursor] << "'? Press ENTER to confirm.\n" << Color::RESET;
+
+        int ch = getSingleChar();
+
+        if (!deleteMode) {
+            if (ch == 'w' || ch == 'W') {
+                cursor--;
+                if (cursor < 0) cursor = (int)names.size() - 1;
+            } else if (ch == 's' || ch == 'S') {
+                cursor++;
+                if (cursor >= (int)names.size()) cursor = 0;
+            } else if (ch == 10 || ch == 13) {
+                // Load selected user
+                if (loadGameForUser(names[cursor])) {
+                    system(CLEAR);
+                    std::cout << saveLoadMSG << "\n";
+                    getSingleChar();
+                    // Start the actual game loop
+                    player->setDiff(player->getDiff().empty() ? "Easy" : player->getDiff());
+                    playEasy();
+                    return;
+                } else {
+                    system(CLEAR);
+                    std::cout << Color::RED << saveLoadMSG << Color::RESET << "\n";
+                    getSingleChar();
+                }
+            } else if (ch == 'x' || ch == 'X') {
+                // 'x' triggers delete confirmation
+                deleteMode = true;
+            } else if (ch == KEY_BACK) {
+                startGame();
+                return;
             }
-            inLoop = false;
-            break;
+        } else {
+            // Delete confirmation mode
+            if (ch == 10 || ch == 13) {
+                deleteSaveForUser(names[cursor]);
+                cursor = 0;
+                deleteMode = false;
+            } else if (ch == 'x' || ch == 'X') {
+                deleteMode = false;
+            }
         }
     }
 }
 
 void Game::playHard(){
     state_inventory();
+}
+
+
+void Game::doShopRestock() {
+    for (int i = 0; i < shop->getRows(); i++) {
+        Item* it = shop->getItems()[i][0];
+        if (!it) continue;
+        if (it->getCategory() == "backpack") continue; // never restock backpacks
+        it->setStock(Random::range(1, 5));
+    }
+    lastRestockTime = std::chrono::steady_clock::now();
+    restockCount++;
 }
 
 void Game::playEasy() {
@@ -651,6 +871,7 @@ void Game::playEasy() {
     bossInitialized = false;
     bossStartTime  = std::chrono::steady_clock::now();
     bossEndTime    = std::chrono::steady_clock::now();
+    lastRestockTime = std::chrono::steady_clock::now();
 
     while (true) {
         system(CLEAR);
@@ -707,7 +928,6 @@ bool Game::state_music(){
 
 // ===================== MENU =====================
 bool Game::state_menu() {
-    // std::cout << "<============================>\n\n";
     menu.displayMenu(this->player->getName(), player->getDiff());
     std::cout << "\n\n\n";
 
@@ -730,9 +950,7 @@ bool Game::state_menu() {
     }
     case KEY_BACK: {
         system(CLEAR);
-        std::cout << "Are you sure you want to quit? (press " << Color::RED;
-        if (KEY_BACK == 127) std::cout << "delete";
-        else                 std::cout << "backspace";
+        std::cout << "Are you sure you want to quit? (press " << Color::RED <<KEY_BACK_STR;
         std::cout << Color::RESET << " to confirm)";
         int confirm = int(getSingleChar());
         if (confirm == KEY_BACK) {
@@ -904,9 +1122,14 @@ bool Game::state_play() {
         player->unequipToInventory();
         player->getInv()->clearInv(player->getEquip());
 
+        if (player->getDiff() == "Hard")
+            deleteSaveForUser(player->getName());
+
         system(CLEAR);
         std::cout << "Balance:" << player->getMoney() << "| Health points: " << Color::BOLD << Color::RED << "0" << Color::RESET << "\n\n";
         std::cout << Color::RED << Color::BOLD << "YOU DIED!\n" << Color::RESET << "\n";
+        if (player->getDiff() == "Hard")
+            std::cout << Color::RED << "(Hard mode: your save has been deleted.)\n" << Color::RESET;
         displayStats(stats);
         std::cout << "\nPress any key to exit...\n";
         getSingleChar();
@@ -945,7 +1168,7 @@ bool Game::state_play_medkit() {
 
     if (medList.empty()) {
         std::cout << "You have no First-Aid kits.\n\n";
-        std::cout << Color::GRAY << " [BACKSPACE] back\n" << Color::RESET;
+        std::cout << Color::GRAY << " ["<<KEY_BACK_STR<<"] back\n" << Color::RESET;
         userInput = int(getSingleChar());
         if (userInput == KEY_BACK) state = STATE_PLAY;
         return true;
@@ -991,7 +1214,7 @@ bool Game::state_play_medkit() {
     if (player->getHp() == 100)
         std::cout << Color::YELLOW << " Already at full HP!\n" << Color::RESET;
 
-    std::cout << Color::GRAY << "\n [A/D] move | [U] use | [BACKSPACE] back\n" << Color::RESET;
+    std::cout << Color::GRAY << "\n [A/D] move | [U] use | ["<<KEY_BACK_STR"] back\n" << Color::RESET;
 
     userInput = int(getSingleChar());
     switch (userInput) {
@@ -1058,8 +1281,14 @@ bool Game::state_boss() {
             player->setMoney(0);
             player->unequipToInventory();
             player->getInv()->clearInv(player->getEquip());
+
+            if (player->getDiff() == "Hard")
+                deleteSaveForUser(player->getName());
+
             system(CLEAR);
             std::cout << Color::RED << Color::BOLD << "YOU DIED TO THE BOSS!\n" << Color::RESET << "\n";
+            if (player->getDiff() == "Hard")
+                std::cout << Color::RED << "(Hard mode: your save has been deleted.)\n" << Color::RESET;
             displayStats(stats);
             std::cout << "\nPress any key to exit...\n";
             getSingleChar();
@@ -1138,11 +1367,6 @@ bool Game::state_boss_cooldown() {
 
 // ===================== INVENTORY =====================
 bool Game::state_inventory() {
-    // std::cout << "<===== " << player->getName() << "'s inventory =====>\n\n";
-    // std::cout << "Balance: " << player->getMoney()
-    //           << " | HP: " << hpColor(player->getHp())
-    //           << player->getHp() << Color::RESET
-    //           << "                 ";
     auto displayInventoryOverlay = [&]() {
         system(CLEAR);
         auto repeat = [](const std::string& s, int n) {
@@ -1384,9 +1608,11 @@ bool Game::state_inventory() {
         bool inTypes    = false;
         bool inFilters  = true;
         while (inFilters) {
+
             displayInventoryOverlay();
-            filters.displayFilters();               // TO DOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
-            std::cout << Color::GRAY << "\n [W/S] move  [ENTER] select  [BACKSPACE] back\n" << Color::RESET;
+            std::cout << Color::DARKGRAY << " ───────────────────────────\n" <<Color::RESET;
+            filters.displayFilters();
+            std::cout << Color::GRAY << "\n [W/S] move  [ENTER] select  ["<<KEY_BACK_STR<<"] back\n" << Color::RESET;
             userInput = int(getSingleChar());
             switch (userInput) {
             case 'w': filters.move("up");   break;
@@ -1440,9 +1666,8 @@ bool Game::state_inventory() {
                     while (inTypes) {
                         displayInventoryOverlay();
                         std::cout << Color::DARKGRAY << " ───────────────────────────\n" <<Color::RESET;
-                        std::cout << "Filter by type:\n";
                         types.displayFilters();
-                        std::cout << Color::GRAY << "\n [W/S] move | [ENTER] select | [BACKSPACE] back\n" << Color::RESET;
+                        std::cout << Color::GRAY << "\n\n [W/S] move | [ENTER] select | ["<<KEY_BACK_STR<<"] back\n" << Color::RESET;
                         int u = int(getSingleChar());
                         switch (u) {
                         case 'w': types.move("up");   break;
@@ -1473,9 +1698,8 @@ bool Game::state_inventory() {
                     while (inRarities) {
                         displayInventoryOverlay();
                         std::cout << Color::DARKGRAY << " ───────────────────────────\n" <<Color::RESET;
-                        std::cout << "Filter by rarity:\n";
                         rarities.displayFilters();
-                        std::cout << Color::GRAY << "\n [W/S] move | [ENTER] select | [BACKSPACE] back\n" << Color::RESET;
+                        std::cout << Color::GRAY << "\n\n [W/S] move | [ENTER] select | ["<<KEY_BACK_STR<<"] back\n" << Color::RESET;
                         int u = int(getSingleChar());
                         switch (u) {
                         case 'w': rarities.move("up");   break;
@@ -1839,14 +2063,54 @@ bool Game::state_inventory() {
     return true;
 }
 
-// ===================== SHOP (buy) =====================
 bool Game::state_store_shop() {
+    // Auto-restock check
+    auto now = std::chrono::steady_clock::now();
+    double elapsed = std::chrono::duration<double>(now - lastRestockTime).count();
+    const double RESTOCK_INTERVAL = 1200.0; // 20 minutes
+    if (elapsed >= RESTOCK_INTERVAL) {
+        doShopRestock();
+        elapsed = 0.0;
+    }
+
+    double secondsLeft = RESTOCK_INTERVAL - elapsed;
+    int minsLeft = int(secondsLeft) / 60;
+    int secsLeft = int(secondsLeft) % 60;
+
+    // Manual restock cost: scales linearly with time remaining
+    // 200 coins at full 20min, minimum 5 coins
+    int manualRestockCost = std::max(5, int((secondsLeft / RESTOCK_INTERVAL) * 300.0));
+
     shop->displayShop(player->getMoney());
+
+    std::cout << Color::DARKGRAY << "\n ────────────────────────────\n" << Color::RESET;
+    std::cout << " Restocks done: " << Color::YELLOW << restockCount << Color::RESET;
+    std::cout << "   |   Next restock in: " << Color::CYAN
+              << minsLeft << "m " << secsLeft << "s" << Color::RESET << "\n";
+    std::cout << Color::GRAY << " [R] manual restock (" << manualRestockCost << " coins)"
+              << "   [W/S] move   [B] buy   [BACKSPACE] back\n" << Color::RESET;
 
     userInput = int(getSingleChar());
     switch (userInput) {
     case 'w': shop->setCurrentRow(shop->getCurrentRow() - 1); break;
     case 's': shop->setCurrentRow(shop->getCurrentRow() + 1); break;
+
+    case 'r': case 'R': {
+        if (player->getMoney() < manualRestockCost) {
+            system(CLEAR);
+            std::cout << Color::RED << " Not enough coins to restock! ("
+                      << player->getMoney() << "/" << manualRestockCost << ")\n" << Color::RESET;
+            getSingleChar();
+        } else {
+            player->setMoney(player->getMoney() - manualRestockCost);
+            doShopRestock();
+            system(CLEAR);
+            std::cout << Color::GREEN << " Shop restocked!\n" << Color::RESET;
+            getSingleChar();
+        }
+        break;
+    }
+
     case 'b': {
         auto src = shop->getItemOnSelectedRC(shop->getCurrentRow(), shop->getCurrentCol());
         if (!src) break;
@@ -1908,6 +2172,7 @@ bool Game::state_store_shop() {
         getSingleChar();
         break;
     }
+
     case KEY_BACK:
         state = STATE_MENU;
         break;
@@ -1968,7 +2233,7 @@ bool Game::state_store_sell() {
 
     if (sellList.empty()) {
         std::cout << " No items to sell.\n\n";
-        std::cout << Color::GRAY << " [BACKSPACE] back\n" << Color::RESET;
+        std::cout << Color::GRAY << " ["<<KEY_BACK_STR<<"] back\n" << Color::RESET;
         userInput = int(getSingleChar());
         if (userInput == KEY_BACK) {
             sellPending = false;
@@ -2006,7 +2271,7 @@ bool Game::state_store_sell() {
     if (sellPending)
         std::cout << " [S] confirm\n";
     else
-        std::cout << Color::GRAY << " [A/D] move | [S] sell | [BACKSPACE] back\n" << Color::RESET;
+        std::cout << Color::GRAY << " [A/D] move | [S] sell | ["<<KEY_BACK_STR<<"] back\n" << Color::RESET;
 
     userInput = int(getSingleChar());
     switch (userInput) {
@@ -2087,7 +2352,7 @@ bool Game::state_map() {
 
 // ===================== GUIDE =====================
 bool Game::state_navigation() {
-    std::cout << "For better user experience, please run this game in bigger screen view\n\n";
+    std::cout << "For better user experience, please run this game in bigger screen view (on macOS use 157x49 terminal resolution)\n\n";
     std::cout << "<===== Navigation guide =====>\n\n";
     std::cout << "Movement:\n W, S, A, D or arrow keys\n~~~~~~~~~~~~~\n";
     std::cout << "Inventory functions:\n tab - change select\n i   - toggle info\n v   - toggle stats\n p   - weapon upgrade\n f   - filters\n r   - repair item\n e   - equip/unequip item\n u   - use medkit\n~~~~~~~~~~~~~\n";
@@ -2109,34 +2374,11 @@ bool Game::state_navigation() {
 
 // ===================== SAVE =====================
 bool Game::state_save() {
-    std::cout << Color::CYAN  << Color::BOLD<< "╔════════════════════════════╗\n";
-    std::cout << "║   "<< Color::RESET << Color::BOLD <<"SAVE OR LOAD YOUR GAME"<<Color::RESET << Color::CYAN << Color::BOLD <<"   ║\n";
-    std::cout << "╚════════════════════════════╝\n"<< Color::RESET;
-    std::cout << Color::DARKGRAY << " ────────────────────────────\n\n" <<Color::RESET;
-    saves.displayFilters();
-    std::cout << "\n\n\n";
-
-    userInput = int(getSingleChar());
-    switch (userInput) {
-    case 'w': saves.move("up"); break;
-    case 's': saves.move("down"); break;
-    case 10: case 13: {
-        int ci = saves.getCurrentItem();
-        auto item = saves.getNames()[ci];
-        if (item == "Save game") {
-            system(CLEAR);
-            saveGame("savegame.json");
-            std::cout << saveLoadMSG << "\n";
-            getSingleChar();
-        } else {
-            system(CLEAR);
-            loadGame("savegame.json");
-            std::cout << saveLoadMSG << "\n";
-            getSingleChar();
-        }
-    }
-    case KEY_BACK: state = STATE_MENU; break;
-    }
+    system(CLEAR);
+    saveGame(SAVE_FILE);
+    std::cout << saveLoadMSG << "\n";
+    getSingleChar();
+    state = STATE_MENU;
     return true;
 }
 

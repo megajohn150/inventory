@@ -49,7 +49,6 @@ private:
     DisplayList filters;
     DisplayList rarities;
     DisplayList types;
-    DisplayList saves;
     DisplayList difficulty;
     Music music;
 
@@ -96,6 +95,10 @@ private:
     bool state_navigation();
     bool state_save();
     bool state_music();
+
+
+    std::chrono::steady_clock::time_point lastRestockTime;
+    int restockCount = 0;
 public:
     Game();
     ~Game();
@@ -114,6 +117,14 @@ public:
 
     DisplayList getDifficulty() const;
     void setDifficulty(const DisplayList &newDifficulty);
+
+
+    bool deleteSaveForUser(const std::string& userName);
+    bool loadGameForUser(const std::string& userName);
+    void state_load_select();
+
+
+    void doShopRestock();
 };
 
 #endif // GAME_H
