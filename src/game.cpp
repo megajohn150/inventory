@@ -1044,11 +1044,49 @@ bool Game::state_boss() {
     if (bossClicks >= 30) {
         int coinsWon = Random::range(50, 150);
         player->setMoney(player->getMoney() + coinsWon);
-
         stats.coinsEarned += coinsWon;
         stats.bossFightsWon++;
+        player->levelUp(150, 300);
+
+        static const std::vector<std::pair<std::string,std::string>> bossDropPool = {
+          {"Sword",    "close range weapons"},
+          {"Katana",   "close range weapons"},
+          {"Hammer",   "close range weapons"},
+          {"Spear",    "close range weapons"},
+          {"Axe",      "close range weapons"},
+          {"Bow",      "long range weapons"},
+          {"Crossbow", "long range weapons"},
+          {"Armor",    "armor"},
+          };
+
+        std::string dropMsg;
+        int roll = Random::range(0, 9);
+        if (roll <= 7) {
+            auto& [name, cat] = bossDropPool[roll];
+            Item* drop = new Item(name, 0, cat);
+            drop->setRarity(static_cast<Rarity>(Random::range(2, 4)));
+            drop->setType(static_cast<Type>(Random::range(0, 4)));
+            drop->setDurability(100);
+            if (player->getInv()->addItem(drop)) {
+                dropMsg = " Got: " + drop->getRarityString() + " " + drop->getTypeString() + " " + name + "!";
+            } else {
+                delete drop;
+                dropMsg = " (Inventory full, drop lost!)";
+            }
+        } else {
+            Item* kit = new Item("Big First-Aid kit", 60, "medkit");
+            kit->setRarity(uncommon);
+            if (player->getInv()->addItem(kit)) {
+                dropMsg = " Got: Big First-Aid Kit!";
+            } else {
+                delete kit;
+                dropMsg = " (Inventory full, drop lost!)";
+            }
+        }
+
         lastEvent = Color::YELLOW + Color::BOLD + "BOSS defeated! You earned +"
-                    + std::to_string(coinsWon) + " coins!" + Color::RESET;
+                    + std::to_string(coinsWon) + " coins!" + Color::RESET
+                    + Color::GREEN + dropMsg + Color::RESET;
 
         bossEndTime     = std::chrono::steady_clock::now();
         bossInitialized = false;
