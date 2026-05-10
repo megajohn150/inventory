@@ -17,6 +17,7 @@ const std::string CYAN    = "\033[96m";
 const std::string WHITE   = "\033[97m";
 const std::string BOLD    = "\033[1m";
 const std::string GRAY = "\033[38;5;242m";
+const std::string DARKGRAY = "\033[90m";
 const std::string RESET   = "\033[0m";
 }
 
@@ -193,11 +194,14 @@ void DisplayList::displayMenu(const std::string& playerName, const std::string& 
         } else {
             std::cout << "     ";
         }
-        if(currentItem == i){
-            std::cout << r <<b << w << names[i] << r;
-        } else {
-            std::cout << r << names[i];
-        }
+
+
+            if(currentItem == i){
+                std::cout << r <<b << w << names[i] << r;
+            } else {
+                std::cout << r << names[i];
+            }
+
         std::cout << "\n";
     }
 }
@@ -206,10 +210,10 @@ void DisplayList::displayFilters()
 {
     for(int i = 0; i < names.size(); i++) {
         if(i == currentItem){
-            std::cout << Color::BOLD << Color::WHITE << "  >  " << Color::RESET;
+            std::cout << Color::BOLD << Color::WHITE << "   >  " << Color::RESET;
         }
         else{
-            std::cout << "     ";
+            std::cout << "      ";
         }
         if(i == currentItem){
             std::cout << Color::BOLD << Color::WHITE << names[i] << Color::RESET;
