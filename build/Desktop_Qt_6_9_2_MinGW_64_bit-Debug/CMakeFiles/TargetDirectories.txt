@@ -1,7 +1,0 @@
-C:/All FIles/Desktop/Programming/C++/inventory_group_proj/v8/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/inventory.dir
-C:/All FIles/Desktop/Programming/C++/inventory_group_proj/v8/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/edit_cache.dir
-C:/All FIles/Desktop/Programming/C++/inventory_group_proj/v8/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/rebuild_cache.dir
-C:/All FIles/Desktop/Programming/C++/inventory_group_proj/v8/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/list_install_components.dir
-C:/All FIles/Desktop/Programming/C++/inventory_group_proj/v8/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/install.dir
-C:/All FIles/Desktop/Programming/C++/inventory_group_proj/v8/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/install/local.dir
-C:/All FIles/Desktop/Programming/C++/inventory_group_proj/v8/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/install/strip.dir
