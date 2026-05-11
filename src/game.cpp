@@ -1884,20 +1884,30 @@ bool Game::state_inventory() {
 
             std::string balance = "Balance: " + std::to_string(player->getMoney());
             std::string hp = "HP: " + std::to_string(player->getHp());
+            std::string level = "Level: " + std::to_string(player->getLvl()) + " (" +std::to_string(player->getExp()) + "/100)";
 
             int total = 27;
             int freeBalance = total - balance.length();
             int freeHp = total - hp.length();
+            int freeLevel = total - level.length();
 
             int balanceLeft = freeBalance / 2;
             int balanceRight = freeBalance - balanceLeft;
+
+            int levelLeft = freeLevel / 2;
+            int levelRight = freeLevel - levelLeft;
 
             int hpLeft = freeHp / 2;
             int hpRight = freeHp - hpLeft;
 
             std::cout << r << c << b <<"╔═══════════════════════════╗\n";
             std::cout << "║         "<< r << b <<"INVENTORY" << r << c << b <<"         ║\n";
+            std::cout << "╠═══════════════════════════╣\n";
             std::cout << "║"<<repeat(" ", balanceLeft)<< r <<"Balance: "<< y << b << player->getMoney()<<repeat(" ", balanceRight)<<r<<c<<b<< "║\n";
+            std::cout << r << c <<b<<"║" << repeat(" ", levelLeft) << r <<
+                "Level: " << b << y << player->getLvl() << r << " (" <<
+                Color::WHITE << player->getExp() << r << "/100)"
+                      << repeat(" ", levelRight) << c << b <<"║\n";
             std::cout << "║"<<repeat(" ", hpLeft)<< r <<"HP: "<< hpColor(player->getHp())  << b<< player->getHp() << repeat(" ", hpRight)<< r << c <<b <<"║\n";
             std::cout << "╚═══════════════════════════╝\n" << r;
 
