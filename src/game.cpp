@@ -175,6 +175,8 @@ bool Game::saveGame(const std::string& /*filename*/) {
     entry["stats"]["itemsSold"]     = stats.itemsSold;
     entry["stats"]["itemsBought"]   = stats.itemsBought;
     entry["stats"]["bossFightsWon"] = stats.bossFightsWon;
+    entry["stats"]["rebirths"] = rebirths;
+
 
     entry["player"]["equipment"]["armor"]  = serializeItem(player->getEquip()->getArmor());
     entry["player"]["equipment"]["melee"]  = serializeItem(player->getEquip()->getMelee());
@@ -285,6 +287,7 @@ bool Game::loadGameForUser(const std::string& userName) {
         stats.itemsSold     = j["stats"]["itemsSold"];
         stats.itemsBought   = j["stats"]["itemsBought"];
         stats.bossFightsWon = j["stats"].value("bossFightsWon", 0);
+        rebirths = j["stats"].value("rebirths", 0);
     }
 
     if (!j["player"]["equipment"]["armor"].is_null())
@@ -322,7 +325,6 @@ bool Game::deleteSaveForUser(const std::string& userName) {
 // ===================== STATS =====================
 
 static void displayStats(const Stats& s) {
-    std::cout << "<===== Statistics =====>\n\n";
     std::cout << " Clicks in play      : " << s.clicks        << "\n";
     std::cout << " Zombies scared off  : " << Color::GREEN  << s.zombiesKilled << Color::RESET << "\n";
     std::cout << " Zombie attacks      : " << Color::RED    << s.zombiesHit    << Color::RESET << "\n";
@@ -872,6 +874,7 @@ void Game::playEasy() {
     bossStartTime  = std::chrono::steady_clock::now();
     bossEndTime    = std::chrono::steady_clock::now();
     lastRestockTime = std::chrono::steady_clock::now();
+    rebirthPending = false;
 
     while (true) {
         system(CLEAR);
@@ -1050,12 +1053,13 @@ bool Game::state_play() {
         return true;
     }
 
+    float rebirthMult = 1.0f + (rebirths * 0.5f);
     int earned = std::max(1, int(
-                                 baseEarnByName(activeWeapon->getName()) * rarityMultiplier(activeWeapon->getRarity())
+                                 baseEarnByName(activeWeapon->getName()) * rarityMultiplier(activeWeapon->getRarity()) * rebirthMult
                                  ));
 
     int roll = Random::range(1, 100);
-    if (roll <= 3) {
+    if (roll <= 1) {
         bossClicks    = 0;
         bossStartTime = std::chrono::steady_clock::now();
         state = STATE_BOSS;
@@ -1131,6 +1135,7 @@ bool Game::state_play() {
         if (player->getDiff() == "Hard")
             std::cout << Color::RED << "(Hard mode: your save has been deleted.)\n" << Color::RESET;
         displayStats(stats);
+        std::cout << " Rebirths            : " << Color::YELLOW << rebirths << Color::RESET << "\n";
         std::cout << "\nPress any key to exit...\n";
         getSingleChar();
         return false;
@@ -1214,7 +1219,7 @@ bool Game::state_play_medkit() {
     if (player->getHp() == 100)
         std::cout << Color::YELLOW << " Already at full HP!\n" << Color::RESET;
 
-    std::cout << Color::GRAY << "\n [A/D] move | [U] use | ["<<KEY_BACK_STR"] back\n" << Color::RESET;
+    std::cout << Color::GRAY << "\n [A/D] move | [U] use | ["<<KEY_BACK_STR<<"] back\n" << Color::RESET;
 
     userInput = int(getSingleChar());
     switch (userInput) {
@@ -1252,7 +1257,6 @@ bool Game::state_play_medkit() {
     return true;
 }
 
-// ===================== BOSS =====================
 bool Game::state_boss() {
     if (!bossInitialized) {
         bossStartTime = std::chrono::steady_clock::now();
@@ -1290,6 +1294,7 @@ bool Game::state_boss() {
             if (player->getDiff() == "Hard")
                 std::cout << Color::RED << "(Hard mode: your save has been deleted.)\n" << Color::RESET;
             displayStats(stats);
+            std::cout << " Rebirths        : " << Color::YELLOW << rebirths << Color::RESET << "\n";
             std::cout << "\nPress any key to exit...\n";
             getSingleChar();
             return false;
@@ -1298,14 +1303,70 @@ bool Game::state_boss() {
     }
 
     if (bossClicks >= 30) {
-        int coinsWon = Random::range(50, 150);
+        float rebirthMult = 1.0f + (rebirths * 0.5f);
+        int coinsWon = int(Random::range(50, 150) * rebirthMult);
         player->setMoney(player->getMoney() + coinsWon);
-
         stats.coinsEarned += coinsWon;
         stats.bossFightsWon++;
         player->levelUp(150, 300);
-        lastEvent = Color::YELLOW + Color::BOLD + "BOSS defeated! You earned +"
-                    + std::to_string(coinsWon) + " coins!" + Color::RESET;
+
+        static const std::vector<std::pair<std::string,std::string>> bossDropPool = {
+          {"Sword",    "close range weapons"},
+          {"Katana",   "close range weapons"},
+          {"Hammer",   "close range weapons"},
+          {"Spear",    "close range weapons"},
+          {"Axe",      "close range weapons"},
+          {"Bow",      "long range weapons"},
+          {"Crossbow", "long range weapons"},
+          {"Armor",    "armor"},
+          };
+
+        // inner label area = 21 chars, 2 spaces padding each side = 25 total
+        // box line: = 25 x =
+        std::string dropMsg;
+        int roll = Random::range(0, 9);
+        if (roll <= 7) {
+            auto& [name, cat] = bossDropPool[roll];
+            Item* drop = new Item(name, 0, cat);
+            drop->setRarity(static_cast<Rarity>(Random::range(2, 4)));
+            drop->setType(static_cast<Type>(Random::range(0, 4)));
+            drop->setDurability(100);
+            if (player->getInv()->addItem(drop)) {
+                std::string label = drop->getRarityString() + " " + drop->getTypeString() + " " + name;
+                if ((int)label.size() > 21) label = label.substr(0, 21);
+                int free = 21 - (int)label.size();
+                int left = free / 2;
+                int right = free - left;
+                dropMsg = Color::GREEN
+                          + "\n ╔═════════════════════════╗\n"
+                          + " ║      BOSS  DROP!        ║\n"
+                          + " ║  " + std::string(left, ' ') + label + std::string(right, ' ') + "  ║\n"
+                          + " ╚═════════════════════════╝"
+                          + Color::RESET;
+            } else {
+                delete drop;
+                dropMsg = Color::RED + " (Inventory full, drop lost!)" + Color::RESET;
+            }
+        } else {
+            Item* kit = new Item("Big First-Aid kit", 60, "medkit");
+            kit->setRarity(uncommon);
+            if (player->getInv()->addItem(kit)) {
+                dropMsg = Color::GREEN
+                          + "\n ╔═════════════════════════╗\n"
+                          + " ║      BOSS  DROP!        ║\n"
+                          + " ║   Big First-Aid Kit!    ║\n"
+                          + " ╚═════════════════════════╝"
+                          + Color::RESET;
+            } else {
+                delete kit;
+                dropMsg = Color::RED + " (Inventory full, drop lost!)" + Color::RESET;
+            }
+        }
+
+        lastEvent = Color::YELLOW + Color::BOLD
+                    + "BOSS defeated! You earned +" + std::to_string(coinsWon) + " coins!"
+                    + Color::RESET
+                    + dropMsg;
 
         bossEndTime     = std::chrono::steady_clock::now();
         bossInitialized = false;
@@ -1360,6 +1421,7 @@ bool Game::state_boss_cooldown() {
     } else {
         while (kbhit()) { getchar(); }
         bossClicks = 0;
+        lastEvent = "";
         state = STATE_PLAY;
     }
     return true;
@@ -1424,6 +1486,7 @@ bool Game::state_inventory() {
     if (showStats) {
         std::cout << Color::DARKGRAY << " ───────────────────────────\n" <<Color::RESET;
         displayStats(stats);
+        std::cout << " Rebirths            : " << Color::YELLOW << rebirths << Color::RESET << "\n";
     } else if (showInfo) {
         std::cout << Color::DARKGRAY << " ───────────────────────────\n" <<Color::RESET;
         if (!equipMode) {
@@ -1495,6 +1558,22 @@ bool Game::state_inventory() {
         std::cout << medkitMsg << "\n";
     }
 
+    if (rebirthPending) {
+        int reqLevel = 10 * (rebirths + 1);
+        int reqCoins = 500 * (rebirths + 1);
+        float nextMult = 1.0f + ((rebirths + 1) * 0.5f);
+        std::cout << Color::DARKGRAY << " ───────────────────────────\n" << Color::RESET;
+        std::cout << Color::YELLOW << Color::BOLD << " REBIRTH #" << (rebirths + 1) << Color::RESET << "\n";
+        std::cout << " Requires: level " << reqLevel << " + " << reqCoins << " coins\n";
+        std::cout << " You have: level " << player->getLvl() << " + " << player->getMoney() << " coins\n";
+        std::cout << " Reward: " << Color::GREEN << "x" << nextMult << " money multiplier" << Color::RESET << "\n";
+        std::cout << " Lose: " << Color::RED << "everything (items, money, level)" << Color::RESET << "\n";
+        if (player->getLvl() >= reqLevel && player->getMoney() >= reqCoins)
+            std::cout << Color::GREEN << " [Z] confirm rebirth\n" << Color::RESET;
+        else
+            std::cout << Color::RED << " Requirements not met!\n" << Color::RESET;
+    }
+
     if (!lastEvent.empty()) {
         if(!lastEvent.find("filters")){
             std::cout << Color::DARKGRAY << " ───────────────────────────\n" <<Color::RESET;
@@ -1504,15 +1583,15 @@ bool Game::state_inventory() {
 
     std::cout << "\n" << Color::GRAY;
     if (equipMode) {
-        std::cout << " [TAB] inventory | [A/D] move | [E] unequip | [I] info | [P] upgrade | [R] repair | [F] filters etc | [M] move | [V] stats\n";
+        std::cout << " [TAB] inventory | [A/D] move | [E] unequip | [I] info | [P] upgrade | [R] repair | [F] filters etc | [M] move | [V] stats | [Z] rebirth\n";
     } else {
         auto hintItem = player->getInv()->getItemOnSelectedRC(
             player->getInv()->getCurrentRow(),
             player->getInv()->getCurrentCol());
         if (hintItem && hintItem->getCategory() == "medkit") {
-            std::cout << " [TAB] equipment | [WASD] move | [I] info | [U] use | [F] filters etc | [M] move | [V] stats\n";
+            std::cout << " [TAB] equipment | [WASD] move | [I] info | [U] use | [F] filters etc | [M] move | [V] stats | [Z] rebirth\n";
         } else {
-            std::cout << " [TAB] equipment | [WASD] move | [E] equip | [I] info | [P] upgrade | [R] repair | [F] filters etc | [M] move | [V] stats\n";
+            std::cout << " [TAB] equipment | [WASD] move | [E] equip | [I] info | [P] upgrade | [R] repair | [F] filters etc | [M] move | [V] stats | [Z] rebirth\n";
         }
     }
     std::cout << Color::RESET;
@@ -1602,7 +1681,43 @@ bool Game::state_inventory() {
         if (equipMode) player->getEquip()->moveCursor(+1);
         else           player->getInv()->setCurrentCol(player->getInv()->getCurrentCol() + 1);
         break;
-
+    case 'z': case 'Z': {
+        int reqLevel = 10 * (rebirths + 1);
+        int reqCoins = 500 * (rebirths + 1);
+        if (rebirthPending) {
+            if (player->getLvl() >= reqLevel && player->getMoney() >= reqCoins) {
+                // Do the rebirth
+                rebirths++;
+                player->setMoney(0);
+                player->setHp(100);
+                player->setLvl(1);
+                player->setExp(0);
+                player->getInv()->clearInv(player->getEquip());
+                // unequip everything
+                player->getEquip()->equipItem(nullptr); // handled by clearInv
+                rebirthPending = false;
+                showInfo       = false;
+                showStats      = false;
+                equipMode      = false;
+                repairPending  = false;
+                upgradePending = false;
+                system(CLEAR);
+                std::cout << Color::YELLOW << Color::BOLD
+                          << " REBIRTH " << rebirths << " complete!\n"
+                          << " Money multiplier: x" << (1.0f + rebirths * 0.5f) << "\n"
+                          << Color::RESET;
+                getSingleChar();
+            }
+            rebirthPending = false;
+        } else {
+            rebirthPending = true;
+            repairPending  = false;
+            upgradePending = false;
+            medkitMsg      = "";
+            showStats      = false;
+        }
+        break;
+    }
     case 'f': {
         bool inRarities = false;
         bool inTypes    = false;
@@ -2088,7 +2203,7 @@ bool Game::state_store_shop() {
     std::cout << "   |   Next restock in: " << Color::CYAN
               << minsLeft << "m " << secsLeft << "s" << Color::RESET << "\n";
     std::cout << Color::GRAY << " [R] manual restock (" << manualRestockCost << " coins)"
-              << "   [W/S] move   [B] buy   [BACKSPACE] back\n" << Color::RESET;
+              << "   [W/S] move   [B] buy   ["<<KEY_BACK_STR<<"] back\n" << Color::RESET;
 
     userInput = int(getSingleChar());
     switch (userInput) {

@@ -99,6 +99,9 @@ private:
 
     std::chrono::steady_clock::time_point lastRestockTime;
     int restockCount = 0;
+
+    int  rebirths       = 0;
+    bool rebirthPending = false;
 public:
     Game();
     ~Game();
