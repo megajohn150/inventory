@@ -111,6 +111,22 @@ inventory/
 </details>
 
 <details>
+<summary><b>💾 Save & Load</b></summary>
+<br/>
+
+The game features a **per-user save system** — progress is tied to a username, so multiple players can each have their own save file on the same machine.
+
+- Progress is saved to a file named after your username
+- Saves include: inventory contents, equipped items, player stats, currency, and session statistics
+- Access the save menu from the main game screen (`STATE_SAVE`)
+- On startup, the game prompts you to **load an existing save** or **start fresh**
+- You can also **delete a save** for a given user from the load screen
+
+> ⚠️ There is currently **no auto-save** — remember to save manually before quitting or your progress will be lost.
+
+</details>
+
+<details>
 <summary><b>🎵 Background Music</b></summary>
 <br/>
 
