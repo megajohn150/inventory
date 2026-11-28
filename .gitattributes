@@ -1,1 +1,3 @@
 *.h linguist-language=C++
+src/miniaudio.h linguist-vendored
+include/json.hpp linguist-vendored
